@@ -92,8 +92,11 @@ if !(execute("brew --version", "Homebrew is not installed or not configured prop
   exit
 end
 
+# Allow brew to lookup versions
+execute("brew tap caskroom/versions", "", false)
+
 install("Google Chrome", "Installing Google Chrome, used for debugging", "brew cask install google-chrome", false, false);
-install("Java SE Development Kit", "Installing the Java SE Development Kit... This might take some time, please, be patient. (You will be prompted for your password)", 'brew cask install java', false, false)
+install("Java SE Development Kit 8", "Installing the Java SE Development Kit 8 ... This might take some time, please, be patient. (You will be prompted for your password)", 'brew cask install java8', false, false)
 install("Android SDK", "Installing Android SDK", 'brew tap caskroom/cask; brew cask install android-sdk', false)
 
 unless ENV["ANDROID_HOME"]
