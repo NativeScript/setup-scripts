@@ -31,16 +31,26 @@ if (-not $isElevated) {
 # Help with installing other dependencies
 $script:answer = if ($SilentMode) {"a"} else {""}
 function Install($programName, $message, $script, $shouldExit) {
-	if ($script:answer -ne "a") {
-		Write-Host -ForegroundColor Green "Allow the script to install $($programName)?"
-		Write-Host "Tip: Note that if you type a you won't be prompted for subsequent installations"
+	if (IsPackageInstalled($programName)) {
+		Write-Host -ForegroundColor Green "$($programName) is already installed in your Machine. Do you want to skip the installation?"
 		do {
-			$script:answer = (Read-Host "(Y)es/(N)o/(A)ll").ToLower()
-		} until ($script:answer -eq "y" -or $script:answer -eq "n" -or $script:answer -eq "a")
+			$script:answer = (Read-Host "(Y)es/(N)o").ToLower()
+		} until ($script:answer -eq "y" -or $script:answer -eq "n")
+		if ($script:answer -eq "y") {
+			return;
+		}
+	} else {
+		if ($script:answer -ne "a") {
+			Write-Host -ForegroundColor Green "Allow the script to install $($programName)?"
+			Write-Host "Tip: Note that if you type a you won't be prompted for subsequent installations"
+			do {
+				$script:answer = (Read-Host "(Y)es/(N)o/(A)ll").ToLower()
+			} until ($script:answer -eq "y" -or $script:answer -eq "n" -or $script:answer -eq "a")
 
-		if ($script:answer -eq "n") {
-			Write-Host -ForegroundColor Yellow "You have chosen not to install $($programName). Some features of NativeScript may not work correctly if you haven't already installed it"
-			return
+			if ($script:answer -eq "n") {
+				Write-Host -ForegroundColor Yellow "You have chosen not to install $($programName). Some features of NativeScript may not work correctly if you haven't already installed it"
+				return
+			}
 		}
 	}
 
@@ -49,6 +59,16 @@ function Install($programName, $message, $script, $shouldExit) {
 	if ($LASTEXITCODE -ne 0) {
 		Write-Host -ForegroundColor Yellow "WARNING: $($programName) not installed"
 	}
+}
+
+function IsPackageInstalled($packageName) {
+    $chocoOutput = chocolatey list $packageName --exact --localOnly --limit-output
+    if ($chocoOutput -and $chocoOutput.startsWith($packageName)) {
+        return $true;
+    }
+    else {
+        return $false;
+    }
 }
 
 function Pause {
