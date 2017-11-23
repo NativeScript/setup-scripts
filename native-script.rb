@@ -8,7 +8,7 @@
 unless Process.uid == 0
   # Execute as root
   puts "This scripts needs sudo permissions"
-  exec('sudo ruby -e "$(curl -fsSL https://raw.githubusercontent.com/NativeScript/nativescript-cli/production/setup/native-script.rb)"')
+  exec('sudo ruby -e "$(curl -fsSL https://www.nativescript.org/setup/mac)"')
 end
 
 $silentMode = false
