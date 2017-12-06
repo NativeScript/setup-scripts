@@ -135,7 +135,7 @@ execute("mkdir -p ~/.cocoapods", "There was a problem in creating ~/.cocoapods d
 # which works with Ruby 2.0 that comes as the macOS default, so these two installations should be in this order.
 # For more information see: https://github.com/CocoaPods/Xcodeproj/pull/393#issuecomment-231055159
 install("CocoaPods", "Installing CocoaPods... This might take some time, please, be patient.", 'gem install cocoapods -V', true)
-install("CocoaPods", "Setup CocoaPods... This might take some time, please, be patient.", 'pod setup', true)
+install("CocoaPods", "Setup CocoaPods... This might take some time, please, be patient.", 'pod setup', false)
 install("xcodeproj", "Installing xcodeproj... This might take some time, please, be patient.", 'gem install xcodeproj -V', true)
 
 puts "Configuring your system for Android development... This might take some time, please, be patient."
