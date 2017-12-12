@@ -7,7 +7,7 @@
 # Only the user can manually download and install Xcode from App Store
 unless Process.uid == 0
   # Execute as root
-  puts "This scripts needs sudo permissions"
+  puts "These scripts require sudo permissions"
   exec('sudo ruby -e "$(curl -fsSL https://www.nativescript.org/setup/mac)"')
 end
 
@@ -105,7 +105,7 @@ end
 # Allow brew to lookup versions
 execute("brew tap caskroom/versions", "", false)
 
-install("Google Chrome", "Installing Google Chrome, used for debugging", "brew cask install google-chrome", false, false);
+install("Google Chrome", "Installing Google Chrome (required to debug NativeScript apps)", "brew cask install google-chrome", false, false);
 install("Java SE Development Kit 8", "Installing the Java SE Development Kit 8 ... This might take some time, please, be patient. (You will be prompted for your password)", 'brew cask install java8', false, false)
 install("Android SDK", "Installing Android SDK", 'brew tap caskroom/cask; brew cask install android-sdk', false)
 
