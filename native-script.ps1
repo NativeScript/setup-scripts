@@ -66,13 +66,17 @@ if ((Get-Command "cinst" -ErrorAction SilentlyContinue) -eq $null) {
 	exit 1
 }
 
-# Install dependenciess with Chocolatey
+# Install dependencies with Chocolatey
 
 Install "Google Chrome" "Installing Google Chrome (required to debug NativeScript apps)" "cinst googlechrome --force --yes"
+
+Install "Node.js" "Installing Node.js LTS" "cinst nodejs-lts --force --yes"
 
 Install "Java Development Kit" "Installing Java Development Kit" "cinst jdk8 --force --yes"
 
 Install "Android SDK" "Installing Android SDK" "cinst android-sdk --force --yes"
+
+Install "Android Studio" "Installing Android Studio" "cinst androidstudio --force --yes"
 # setup environment
 
 if (!$env:ANDROID_HOME) {
@@ -101,9 +105,10 @@ if (!$env:JAVA_HOME) {
 # following commands are separated in case of having to answer to license agreements
 $androidExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "sdkmanager")
 echo y | cmd /c "$androidExecutable" "platform-tools"
-echo y | cmd /c "$androidExecutable" "tools"
 echo y | cmd /c "$androidExecutable" "build-tools;25.0.2"
+echo y | cmd /c "$androidExecutable" "build-tools;26.0.2"
 echo y | cmd /c "$androidExecutable" "platforms;android-25"
+echo y | cmd /c "$androidExecutable" "platforms;android-26"
 echo y | cmd /c "$androidExecutable" "extras;android;m2repository"
 echo y | cmd /c "$androidExecutable" "extras;google;m2repository"
 
