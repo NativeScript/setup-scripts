@@ -8,6 +8,9 @@
 param(
 	[switch] $SilentMode
 )
+
+$scriptUrl = "https://raw.githubusercontent.com/NativeScript/setup-scripts/master/native-script.ps1"
+
 # Check if latest .NET framework installed is at least 4
 $dotNetVersions = Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -recurse | Get-ItemProperty -name Version,Release -EA 0 | Where { $_.PSChildName -match '^(?!S)\p{L}'} | Select Version
 $latestDotNetVersion = $dotNetVersions.GetEnumerator() | Sort-Object Version | Select-Object -Last 1
@@ -24,7 +27,7 @@ if ($latestDotNetMajorNumber -lt 4) {
 # Self-elevate
 $isElevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
 if (-not $isElevated) {
-	start-process -FilePath PowerShell.exe -Verb Runas -Wait -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/NativeScript/nativescript-cli/production/setup/native-script.ps1'))"
+	start-process -FilePath PowerShell.exe -Verb Runas -Wait -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command iex ((new-object net.webclient).DownloadString($scriptUrl))"
 	exit 0
 }
 
@@ -70,13 +73,11 @@ if ((Get-Command "cinst" -ErrorAction SilentlyContinue) -eq $null) {
 
 Install "Google Chrome" "Installing Google Chrome (required to debug NativeScript apps)" "cinst googlechrome --force --yes"
 
-Install "Node.js" "Installing Node.js LTS" "cinst nodejs-lts --force --yes"
-
 Install "Java Development Kit" "Installing Java Development Kit" "cinst jdk8 --force --yes"
 
 Install "Android SDK" "Installing Android SDK" "cinst android-sdk --force --yes"
 
-Install "Android Studio" "Installing Android Studio" "cinst androidstudio --force --yes"
+refreshenv
 # setup environment
 
 if (!$env:ANDROID_HOME) {
@@ -92,6 +93,7 @@ if (!$env:ANDROID_HOME) {
 
 	$env:ANDROID_HOME = $androidHome;
 	[Environment]::SetEnvironmentVariable("ANDROID_HOME", "$env:ANDROID_HOME", "User")
+	refreshenv
 }
 
 if (!$env:JAVA_HOME) {
@@ -99,28 +101,90 @@ if (!$env:JAVA_HOME) {
 	$javaHome = (Get-ItemProperty "HKLM:\Software\JavaSoft\Java Development Kit\$curVer").JavaHome
 	[Environment]::SetEnvironmentVariable("JAVA_HOME", $javaHome, "User")
 	$env:JAVA_HOME = $javaHome;
+	refreshenv
+}
+
+# Update android-sdk tools in order to have avdmanager available and create AVDs later
+# NOTE: This step can be removed once chocolatey provides later version of Android SDK
+$androidToolsPath = [io.path]::combine($env:ANDROID_HOME, "tools")
+$androidToolsOldPath = [io.path]::combine($env:ANDROID_HOME, "toolsOld")
+Copy-Item "$androidToolsPath" "$androidToolsOldPath" -recurse
+echo y | cmd /c "%ANDROID_HOME%\toolsOld\bin\sdkmanager.bat" "tools"
+Remove-Item "$androidToolsOldPath" -Force -Recurse
+
+# add repositories.cfg if it is not created
+$repositoriesConfigPath = [io.path]::combine($env:USERPROFILE, ".android", "repositories.cfg")
+$pathExists = Test-Path $repositoriesConfigPath
+if($pathExists -eq $False){
+	Write-Host "Creating file $repositoriesConfigPath ..."
+	New-Item $repositoriesConfigPath -type file
 }
 
 # setup android sdk
 # following commands are separated in case of having to answer to license agreements
 $androidExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "sdkmanager")
-echo y | cmd /c "$androidExecutable" "platform-tools"
-echo y | cmd /c "$androidExecutable" "build-tools;25.0.2"
-echo y | cmd /c "$androidExecutable" "build-tools;26.0.2"
-echo y | cmd /c "$androidExecutable" "platforms;android-25"
-echo y | cmd /c "$androidExecutable" "platforms;android-26"
-echo y | cmd /c "$androidExecutable" "extras;android;m2repository"
-echo y | cmd /c "$androidExecutable" "extras;google;m2repository"
+$avdManagerExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "avdmanager")
 
-if ((Read-Host "Do you want to install Android emulator?") -eq 'y') {
+Write-Host "Setting up Android SDK..."
+Write-Host "Setting up Android SDK platform-tools..."
+echo y | cmd /c "$androidExecutable" "platform-tools"
+Write-Host "Setting up Android SDK build-tools;26.0.2..."
+echo y | cmd /c "$androidExecutable" "build-tools;26.0.2"
+Write-Host "Setting up Android SDK platforms;android-26..."
+echo y | cmd /c "$androidExecutable" "platforms;android-26"
+Write-Host "Setting up Android SDK extras;android;m2repository..."
+echo y | cmd /c "$androidExecutable" "extras;android;m2repository"
+Write-Host "Setting up Android SDK extras;google;m2repository..."
+echo y | cmd /c "$androidExecutable" "extras;google;m2repository"
+Write-Host "FINISHED setting up Android SDK."
+
+# Setup Default Emulator
+$installEmulatorAnswer = ''
+Do {
+	$installEmulatorAnswer = (Read-Host "Do you want to install Android emulator? (Y)es/(N)o").ToLower()
+}
+While ($installEmulatorAnswer -ne 'y' -and $installEmulatorAnswer -ne 'n')
+
+if ($installEmulatorAnswer -eq 'y') {
 	if ((Read-Host "Do you want to install HAXM (Hardware accelerated Android emulator)?") -eq 'y') {
+		Write-Host "Setting up Android SDK system-images;android-26;google_apis;x86..."
+		echo y | cmd /c "$androidExecutable" "system-images;android-26;google_apis;x86"
+
 		echo y | cmd /c "$androidExecutable" "extras;intel;Hardware_Accelerated_Execution_Manager"
 		$haxmSilentInstaller = [io.path]::combine($env:ANDROID_HOME, "extras", "intel", "Hardware_Accelerated_Execution_Manager", "silent_install.bat")
 		cmd /c "$haxmSilentInstaller"
-		echo y | cmd /c "$androidExecutable" "system-images;android-25;google_apis;x86"
+
+		if ($LASTEXITCODE -ne 0) {
+			Write-Host -ForegroundColor Yellow "WARNING: Failed to install HAXM in silent mode. Starting interactive mode."
+			$haxmInstaller = [io.path]::combine($env:ANDROID_HOME, "extras", "intel", "Hardware_Accelerated_Execution_Manager", "intelhaxm-android.exe")
+			cmd /c "$haxmInstaller"
+		}
+
+		$cmdArgList = @(
+			"create",
+			"avd",
+			"-n","Emulator-Api26-Default-haxm",
+			"-k",'"system-images;android-26;google_apis;x86"'
+		)
 	}
 	else {
-		echo y | cmd /c "$androidExecutable" "system-images;android-25;google_apis;armeabi-v7a"
+		Write-Host "Setting up Android SDK system-images;android-26;google_apis;armeabi-v7a..."
+		echo y | cmd /c "$androidExecutable" "system-images;android-26;google_apis;armeabi-v7a"
+
+		$cmdArgList = @(
+			"create",
+			"avd",
+			"-n","Emulator-Api26-Default",
+			"-k",'"system-images;android-26;google_apis;armeabi-v7a"'
+		)
+	}
+
+	echo no | cmd /c $avdManagerExecutable $cmdArgList
+	
+	if ($LASTEXITCODE -ne 0) {
+		Write-Host -ForegroundColor Yellow "An error occurred while installing Android emulator."
+	}else{
+		Write-Host -ForegroundColor Green "Android emulator is successfully installed."
 	}
 }
 
