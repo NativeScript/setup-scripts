@@ -9,7 +9,7 @@ param(
 	[switch] $SilentMode
 )
 
-$scriptUrl = "https://raw.githubusercontent.com/NativeScript/setup-scripts/master/native-script.ps1"
+$scriptUrl = "https://www.nativescript.org/setup/win"
 
 # Check if latest .NET framework installed is at least 4
 $dotNetVersions = Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -recurse | Get-ItemProperty -name Version,Release -EA 0 | Where { $_.PSChildName -match '^(?!S)\p{L}'} | Select Version
