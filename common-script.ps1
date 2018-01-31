@@ -11,8 +11,8 @@ function Create-AVD{
 
     if ($installEmulatorAnswer -eq 'y') {
         if ((Read-Host "Do you want to install HAXM (Hardware accelerated Android emulator)?") -eq 'y') {
-            Write-Host "Setting up Android SDK system-images;android-26;google_apis;x86..."
-            echo y | cmd /c "$androidExecutable" "system-images;android-26;google_apis;x86"
+            Write-Host "Setting up Android SDK system-images;android-25;google_apis;x86..."
+            echo y | cmd /c "$androidExecutable" "system-images;android-25;google_apis;x86"
 
             echo y | cmd /c "$androidExecutable" "extras;intel;Hardware_Accelerated_Execution_Manager"
             $haxmSilentInstaller = [io.path]::combine($env:ANDROID_HOME, "extras", "intel", "Hardware_Accelerated_Execution_Manager", "silent_install.bat")
@@ -27,19 +27,19 @@ function Create-AVD{
             $cmdArgList = @(
                 "create",
                 "avd",
-                "-n","Emulator-Api26-Default-haxm",
-                "-k",'"system-images;android-26;google_apis;x86"'
+                "-n","Emulator-Api25-Default-haxm",
+                "-k",'"system-images;android-25;google_apis;x86"'
             )
         }
         else {
-            Write-Host "Setting up Android SDK system-images;android-26;google_apis;armeabi-v7a..."
-            echo y | cmd /c "$androidExecutable" "system-images;android-26;google_apis;armeabi-v7a"
+            Write-Host "Setting up Android SDK system-images;android-25;google_apis;armeabi-v7a..."
+            echo y | cmd /c "$androidExecutable" "system-images;android-25;google_apis;armeabi-v7a"
 
             $cmdArgList = @(
                 "create",
                 "avd",
-                "-n","Emulator-Api26-Default",
-                "-k",'"system-images;android-26;google_apis;armeabi-v7a"'
+                "-n","Emulator-Api25-Default",
+                "-k",'"system-images;android-25;google_apis;armeabi-v7a"'
             )
         }
 
