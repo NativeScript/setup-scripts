@@ -1,4 +1,4 @@
-$scriptUrl = "https://raw.githubusercontent.com/NativeScript/setup-scripts/master/create-avd-script.ps1"
+$scriptUrl = "https://nativescript.org/setup/win-avd"
 
 # Self-elevate
 $isElevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
