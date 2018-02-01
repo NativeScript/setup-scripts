@@ -74,7 +74,7 @@ if ((Get-Command "cinst" -ErrorAction SilentlyContinue) -eq $null) {
 
 Install "Google Chrome" "Installing Google Chrome (required to debug NativeScript apps)" "cinst googlechrome --force --yes"
 
-Install "Java Development Kit" "Installing Java Development Kit" "cinst jdk8 --force --yes"
+Install "Java Development Kit" "Installing Java Development Kit" "choco upgrade jdk8 --force"
 
 Install "Android SDK" "Installing Android SDK" "cinst android-sdk --force --yes"
 
