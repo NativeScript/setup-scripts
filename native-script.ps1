@@ -9,7 +9,8 @@ param(
 	[switch] $SilentMode
 )
 
-$scriptUrl = "https://www.nativescript.org/setup/win"
+$scriptUrl = "https://wwwuat.nativescript.org/setup/win"
+$scriptCommonUrl = "https://wwwuat.nativescript.org/setup/win-common"
 
 # Check if latest .NET framework installed is at least 4
 $dotNetVersions = Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -recurse | Get-ItemProperty -name Version,Release -EA 0 | Where { $_.PSChildName -match '^(?!S)\p{L}'} | Select Version
@@ -27,7 +28,7 @@ if ($latestDotNetMajorNumber -lt 4) {
 # Self-elevate
 $isElevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
 if (-not $isElevated) {
-	start-process -FilePath PowerShell.exe -Verb Runas -Wait -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command iex ((new-object net.webclient).DownloadString($scriptUrl))"
+	start-process -FilePath PowerShell.exe -Verb Runas -Wait -ArgumentList ("-NoProfile -ExecutionPolicy Bypass -Command iex ((new-object net.webclient).DownloadString('" + $scriptUrl + "'))")
 	exit 0
 }
 
@@ -123,7 +124,6 @@ if($pathExists -eq $False){
 # setup android sdk
 # following commands are separated in case of having to answer to license agreements
 $androidExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "sdkmanager")
-$avdManagerExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "avdmanager")
 
 Write-Host "Setting up Android SDK..."
 Write-Host "Setting up Android SDK platform-tools..."
@@ -139,14 +139,8 @@ echo y | cmd /c "$androidExecutable" "extras;google;m2repository"
 Write-Host "FINISHED setting up Android SDK."
 
 # Setup Default Emulator
-$CommonScript = ".\common-script.ps1" 
-If(Test-Path -Path $CommonScript) { 
-	 . $CommonScript 
-	 Create-AVD
-} 
-else {
-	"$CommonScript not found" ; exit 
-}
+iex ((new-object net.webclient).DownloadString($scriptCommonUrl))
+Create-AVD
 
 Write-Host -ForegroundColor Green "This script has modified your environment. You need to log off and log back on for the changes to take effect."
 Pause
