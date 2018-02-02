@@ -11,7 +11,7 @@ function Create-AVD{
 
     if ($installEmulatorAnswer -eq 'y') {
         if ((Read-Host "Do you want to install HAXM (Hardware accelerated Android emulator)?") -eq 'y') {
-            Write-Host "Setting up Android SDK system-images;android-25;google_apis;x86..."
+            Write-Host -ForegroundColor DarkYellow "Setting up Android SDK system-images;android-25;google_apis;x86..."
             echo y | cmd /c "$androidExecutable" "system-images;android-25;google_apis;x86"
 
             echo y | cmd /c "$androidExecutable" "extras;intel;Hardware_Accelerated_Execution_Manager"
@@ -46,7 +46,7 @@ function Create-AVD{
         echo no | cmd /c $avdManagerExecutable $cmdArgList
         
         if ($LASTEXITCODE -ne 0) {
-            Write-Host -ForegroundColor Yellow "An error occurred while installing Android emulator."
+            Write-Host -ForegroundColor Red "ERROR: An error occurred while installing Android emulator. Please, install it manually."
         }else{
             Write-Host -ForegroundColor Green "Android emulator is successfully installed."
         }
