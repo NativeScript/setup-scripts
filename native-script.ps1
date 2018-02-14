@@ -130,8 +130,9 @@ if($androidToolsPath){
 if($androidToolsPathExists -eq $True){
 	Write-Host -ForegroundColor DarkYellow "Updating Android SDK tools..."
 	Copy-Item "$androidToolsPath" "$androidToolsOldPath" -recurse
-	echo y | cmd /c "%ANDROID_HOME%\toolsOld\bin\sdkmanager.bat" "tools" --licenses
+	echo y | cmd /c "android update sdk -a -u -t tools platform-tools build-tools;26.0.1" --licenses
 	Remove-Item "$androidToolsOldPath" -Force -Recurse
+	refreshenv
 } else {
 	Write-Host -ForegroundColor Red "ERROR: Failed to update Android SDK tools. This is a blocker to install default emulator, so please update manually once this installation has finished."
 }
