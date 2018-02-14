@@ -76,7 +76,11 @@ Install "Google Chrome" "Installing Google Chrome (required to debug NativeScrip
 
 Install "Java Development Kit" "Installing Java Development Kit" "choco upgrade jdk8 --force"
 
-$androidHomePathExists = Test-Path $env:ANDROID_HOME
+$androidHomePathExists = $False
+if($env:ANDROID_HOME){
+	$androidHomePathExists = Test-Path $env:ANDROID_HOME
+}
+
 if($androidHomePathExists -eq $False){
 	[Environment]::SetEnvironmentVariable("ANDROID_HOME",$null,"User")
 }
@@ -118,11 +122,15 @@ Write-Host -ForegroundColor DarkYellow "Setting up Android SDK..."
 $androidToolsPath = [io.path]::combine($env:ANDROID_HOME, "tools")
 $androidToolsOldPath = [io.path]::combine($env:ANDROID_HOME, "toolsOld")
 
-$androidToolsPathExists = Test-Path $androidToolsPath
+$androidToolsPathExists = $False
+if($androidToolsPath){
+	$androidToolsPathExists = Test-Path $androidToolsPath
+}
+
 if($androidToolsPathExists -eq $True){
 	Write-Host -ForegroundColor DarkYellow "Updating Android SDK tools..."
 	Copy-Item "$androidToolsPath" "$androidToolsOldPath" -recurse
-	echo y | cmd /c "%ANDROID_HOME%\toolsOld\bin\sdkmanager.bat" "tools"
+	echo y | cmd /c "%ANDROID_HOME%\toolsOld\bin\sdkmanager.bat" "tools" --licenses
 	Remove-Item "$androidToolsOldPath" -Force -Recurse
 } else {
 	Write-Host -ForegroundColor Red "ERROR: Failed to update Android SDK tools. This is a blocker to install default emulator, so please update manually once this installation has finished."
@@ -130,7 +138,12 @@ if($androidToolsPathExists -eq $True){
 
 # add repositories.cfg if it is not created
 $repositoriesConfigPath = [io.path]::combine($env:USERPROFILE, ".android", "repositories.cfg")
-$pathExists = Test-Path $repositoriesConfigPath
+
+$pathExists = $False
+if($repositoriesConfigPath){
+	$pathExists = Test-Path $repositoriesConfigPath
+}
+
 if($pathExists -eq $False){
 	Write-Host -ForegroundColor DarkYellow "Creating file $repositoriesConfigPath ..."
 	New-Item $repositoriesConfigPath -type file
