@@ -1,5 +1,5 @@
-$scriptUrl = "https://wwwuat.nativescript.org/setup/win-avd"
-$scriptCommonUrl = "https://wwwuat.nativescript.org/setup/win-common"
+$scriptUrl = "https://www.nativescript.org/setup/win-avd"
+$scriptCommonUrl = "https://www.nativescript.org/setup/win-common"
 
 # Self-elevate
 $isElevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
