@@ -8,6 +8,10 @@
 param(
 	[switch] $SilentMode
 )
+
+$scriptUrl = "https://www.nativescript.org/setup/win"
+$scriptCommonUrl = "https://www.nativescript.org/setup/win-common"
+
 # Check if latest .NET framework installed is at least 4
 $dotNetVersions = Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -recurse | Get-ItemProperty -name Version,Release -EA 0 | Where { $_.PSChildName -match '^(?!S)\p{L}'} | Select Version
 $latestDotNetVersion = $dotNetVersions.GetEnumerator() | Sort-Object Version | Select-Object -Last 1
@@ -24,7 +28,7 @@ if ($latestDotNetMajorNumber -lt 4) {
 # Self-elevate
 $isElevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
 if (-not $isElevated) {
-	start-process -FilePath PowerShell.exe -Verb Runas -Wait -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/NativeScript/nativescript-cli/production/setup/native-script.ps1'))"
+	start-process -FilePath PowerShell.exe -Verb Runas -Wait -ArgumentList ("-NoProfile -ExecutionPolicy Bypass -Command iex ((new-object net.webclient).DownloadString('" + $scriptUrl + "'))")
 	exit 0
 }
 
@@ -39,7 +43,7 @@ function Install($programName, $message, $script, $shouldExit) {
 		} until ($script:answer -eq "y" -or $script:answer -eq "n" -or $script:answer -eq "a")
 
 		if ($script:answer -eq "n") {
-			Write-Host -ForegroundColor Yellow "You have chosen not to install $($programName). Some features of NativeScript may not work correctly if you haven't already installed it"
+			Write-Host -ForegroundColor Yellow "WARNING: You have chosen not to install $($programName). Some features of NativeScript may not work correctly if you haven't already installed it"
 			return
 		}
 	}
@@ -66,16 +70,28 @@ if ((Get-Command "cinst" -ErrorAction SilentlyContinue) -eq $null) {
 	exit 1
 }
 
-# Install dependenciess with Chocolatey
+# Install dependencies with Chocolatey
 
 Install "Google Chrome" "Installing Google Chrome (required to debug NativeScript apps)" "cinst googlechrome --force --yes"
 
-Install "Java Development Kit" "Installing Java Development Kit" "cinst jdk8 --force --yes"
+Install "Java Development Kit" "Installing Java Development Kit" "choco upgrade jdk8 --force"
+
+$androidHomePathExists = $False
+if($env:ANDROID_HOME){
+	$androidHomePathExists = Test-Path $env:ANDROID_HOME
+}
+
+if($androidHomePathExists -eq $False){
+	[Environment]::SetEnvironmentVariable("ANDROID_HOME",$null,"User")
+}
 
 Install "Android SDK" "Installing Android SDK" "cinst android-sdk --force --yes"
+
+refreshenv
 # setup environment
 
 if (!$env:ANDROID_HOME) {
+	Write-Host -ForegroundColor DarkYellow "Setting up ANDROID_HOME"
 	# in case the user has `android` in the PATH, use it as base for setting ANDROID_HOME
 	$androidExecutableEnvironmentPath = Get-Command android -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Definition
 	if ($androidExecutableEnvironmentPath -ne $null) {
@@ -88,6 +104,7 @@ if (!$env:ANDROID_HOME) {
 
 	$env:ANDROID_HOME = $androidHome;
 	[Environment]::SetEnvironmentVariable("ANDROID_HOME", "$env:ANDROID_HOME", "User")
+	refreshenv
 }
 
 if (!$env:JAVA_HOME) {
@@ -95,29 +112,63 @@ if (!$env:JAVA_HOME) {
 	$javaHome = (Get-ItemProperty "HKLM:\Software\JavaSoft\Java Development Kit\$curVer").JavaHome
 	[Environment]::SetEnvironmentVariable("JAVA_HOME", $javaHome, "User")
 	$env:JAVA_HOME = $javaHome;
+	refreshenv
+}
+
+Write-Host -ForegroundColor DarkYellow "Setting up Android SDK..."
+
+# Update android-sdk tools in order to have avdmanager available and create AVDs later
+# NOTE: This step can be removed once chocolatey provides later version of Android SDK
+$androidToolsPath = [io.path]::combine($env:ANDROID_HOME, "tools")
+$androidToolsOldPath = [io.path]::combine($env:ANDROID_HOME, "toolsOld")
+
+$androidToolsPathExists = $False
+if($androidToolsPath){
+	$androidToolsPathExists = Test-Path $androidToolsPath
+}
+
+if($androidToolsPathExists -eq $True){
+	Write-Host -ForegroundColor DarkYellow "Updating Android SDK tools..."
+	Copy-Item "$androidToolsPath" "$androidToolsOldPath" -recurse
+	# Do NOT auto-accept license with `echo y` since the command requires acceptance of MULTIPLE licenses on a clean machine which breaks in this case
+	cmd /c "%ANDROID_HOME%\toolsOld\bin\sdkmanager.bat" "tools"
+	Remove-Item "$androidToolsOldPath" -Force -Recurse
+} else {
+	Write-Host -ForegroundColor Red "ERROR: Failed to update Android SDK tools. This is a blocker to install default emulator, so please update manually once this installation has finished."
+}
+
+# add repositories.cfg if it is not created
+$repositoriesConfigPath = [io.path]::combine($env:USERPROFILE, ".android", "repositories.cfg")
+
+$pathExists = $False
+if($repositoriesConfigPath){
+	$pathExists = Test-Path $repositoriesConfigPath
+}
+
+if($pathExists -eq $False){
+	Write-Host -ForegroundColor DarkYellow "Creating file $repositoriesConfigPath ..."
+	New-Item $repositoriesConfigPath -type file
 }
 
 # setup android sdk
 # following commands are separated in case of having to answer to license agreements
 $androidExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "sdkmanager")
-echo y | cmd /c "$androidExecutable" "platform-tools"
-echo y | cmd /c "$androidExecutable" "tools"
-echo y | cmd /c "$androidExecutable" "build-tools;25.0.2"
-echo y | cmd /c "$androidExecutable" "platforms;android-25"
-echo y | cmd /c "$androidExecutable" "extras;android;m2repository"
-echo y | cmd /c "$androidExecutable" "extras;google;m2repository"
 
-if ((Read-Host "Do you want to install Android emulator?") -eq 'y') {
-	if ((Read-Host "Do you want to install HAXM (Hardware accelerated Android emulator)?") -eq 'y') {
-		echo y | cmd /c "$androidExecutable" "extras;intel;Hardware_Accelerated_Execution_Manager"
-		$haxmSilentInstaller = [io.path]::combine($env:ANDROID_HOME, "extras", "intel", "Hardware_Accelerated_Execution_Manager", "silent_install.bat")
-		cmd /c "$haxmSilentInstaller"
-		echo y | cmd /c "$androidExecutable" "system-images;android-25;google_apis;x86"
-	}
-	else {
-		echo y | cmd /c "$androidExecutable" "system-images;android-25;google_apis;armeabi-v7a"
-	}
-}
+Write-Host -ForegroundColor DarkYellow "Setting up Android SDK platform-tools..."
+echo y | cmd /c "$androidExecutable" "platform-tools"
+Write-Host -ForegroundColor DarkYellow "Setting up Android SDK build-tools;25.0.2..."
+echo y | cmd /c "$androidExecutable" "build-tools;25.0.2"
+Write-Host -ForegroundColor DarkYellow "Setting up Android SDK platforms;android-25..."
+echo y | cmd /c "$androidExecutable" "platforms;android-25"
+Write-Host -ForegroundColor DarkYellow "Setting up Android SDK extras;android;m2repository..."
+echo y | cmd /c "$androidExecutable" "extras;android;m2repository"
+Write-Host -ForegroundColor DarkYellow "Setting up Android SDK extras;google;m2repository..."
+echo y | cmd /c "$androidExecutable" "extras;google;m2repository"
+Write-Host -ForegroundColor DarkYellow "FINISHED setting up Android SDK."
+
+# Setup Default Emulator
+iex ((new-object net.webclient).DownloadString($scriptCommonUrl))
+Create-AVD
 
 Write-Host -ForegroundColor Green "This script has modified your environment. You need to log off and log back on for the changes to take effect."
 Pause
