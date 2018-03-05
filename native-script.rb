@@ -144,6 +144,8 @@ puts "Configuring your system for Android development... This might take some ti
 error_msg = "There seem to be some problems with the Android configuration"
 
 sdk_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "sdkmanager")
+avd_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "avdmanager")
+
 execute("echo y | #{sdk_manager} \"platform-tools\"", error_msg)
 execute("echo y | #{sdk_manager} \"tools\"", error_msg)
 execute("echo y | #{sdk_manager} \"build-tools;25.0.2\"", error_msg)
@@ -155,13 +157,21 @@ puts "Do you want to install Android emulator? (y/n)"
 if $silentMode || gets.chomp.downcase == "y"
   puts "Do you want to install HAXM (Hardware accelerated Android emulator)? (y/n)"
   if $silentMode || gets.chomp.downcase == "y"
-    execute("echo y | #{sdk_manager} \"extras;intel;Hardware_Accelerated_Execution_Manager\"", error_msg)
+    execute("echo y | #{sdk_manager} \"extras;intel;Hardware_Accelerated_Execution_Manager\"", "There seem to be a problem with HAXM installation.")
     haxm_silent_installer = File.join(ENV["ANDROID_HOME"], "extras", "intel", "Hardware_Accelerated_Execution_Manager", "silent_install.sh")
     execute("sudo chmod 755 #{haxm_silent_installer}", "Failed to update permissions of HAXM silent installer.")
     execute("sudo #{haxm_silent_installer}", "There seem to be some problems with the Android configuration")
     execute("echo y | #{sdk_manager} \"system-images;android-25;google_apis;x86\"", error_msg)
+
+    # Create emulator
+    puts "Create emulator with HAXM..."
+    execute("#{avd_manager} create avd -n Emulator-Api25-Default-haxm -k \"system-images;android-25;google_apis;x86\"", "Failed to created emulator.")
+
   else
-    execute("echo y | #{sdk_manager} \"system-images;android-25;google_apis;armeabi-v7a\"", error_msg)
+    # Create emulator
+    puts "Create emulator..."
+    execute("echo y | #{sdk_manager} \"system-images;android-25;google_apis;armeabi-v7a\"", "Failed to created emulator.")
+    execute("#{avd_manager} create avd -n Emulator-Api25-Default -k \"system-images;android-25;google_apis;armeabi-v7a\"", error_msg)
   end  
 end
 
