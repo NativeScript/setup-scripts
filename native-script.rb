@@ -146,7 +146,7 @@ error_msg = "There seem to be some problems with the Android configuration"
 sdk_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "sdkmanager")
 execute("echo y | #{sdk_manager} \"platform-tools\"", error_msg)
 execute("echo y | #{sdk_manager} \"tools\"", error_msg)
-execute("echo y | #{sdk_manager} \"build-tools;25.0.2\"", error_msg)
+execute("echo y | #{sdk_manager} \"build-tools;27.0.3\"", error_msg)
 execute("echo y | #{sdk_manager} \"platforms;android-25\"", error_msg)
 execute("echo y | #{sdk_manager} \"extras;android;m2repository\"", error_msg)
 execute("echo y | #{sdk_manager} \"extras;google;m2repository\"", error_msg)
