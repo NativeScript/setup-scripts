@@ -156,8 +156,8 @@ $androidExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "sdkm
 
 Write-Host -ForegroundColor DarkYellow "Setting up Android SDK platform-tools..."
 echo y | cmd /c "$androidExecutable" "platform-tools"
-Write-Host -ForegroundColor DarkYellow "Setting up Android SDK build-tools;25.0.2..."
-echo y | cmd /c "$androidExecutable" "build-tools;25.0.2"
+Write-Host -ForegroundColor DarkYellow "Setting up Android SDK build-tools;27.0.3..."
+echo y | cmd /c "$androidExecutable" "build-tools;27.0.3"
 Write-Host -ForegroundColor DarkYellow "Setting up Android SDK platforms;android-25..."
 echo y | cmd /c "$androidExecutable" "platforms;android-25"
 Write-Host -ForegroundColor DarkYellow "Setting up Android SDK extras;android;m2repository..."
