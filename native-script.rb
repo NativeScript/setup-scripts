@@ -136,6 +136,8 @@ execute("mkdir -p ~/.cocoapods", "There was a problem in creating ~/.cocoapods d
 # For more information see: https://github.com/CocoaPods/Xcodeproj/pull/393#issuecomment-231055159
 install("CocoaPods", "Installing CocoaPods... This might take some time, please, be patient.", 'gem install cocoapods -V', true)
 install("CocoaPods", "Setup CocoaPods... This might take some time, please, be patient.", 'pod setup', false)
+install("pip", "Installing pip... This might take some time, please, be patient.", 'easy_install pip', true)
+install("six", "Installing 'six' python package... This might take some time, please, be patient.", 'pip install six', false)
 install("xcodeproj", "Installing xcodeproj... This might take some time, please, be patient.", 'gem install xcodeproj -V', true)
 
 puts "Configuring your system for Android development... This might take some time, please, be patient."
