@@ -7,7 +7,11 @@ To run the setup scripts you can use the following commands:
 
  - for Windows: `@powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((new-object net.webclient).DownloadString('https://www.nativescript.org/setup/win'))"`
  
- - for macOS: `ruby -e "$(curl -fsSL https://www.nativescript.org/setup/mac)"`
+ - for macOS: `ruby -e "$(curl -fsSL https://www.nativescript.org/setup/mac)"`. 
+ 
+   In order to pass options use: `ruby -e "$(curl -fsSL https://www.nativescript.org/setup/mac)" -- [options]` 
+   
+   For example: `ruby -e "$(curl -fsSL https://www.nativescript.org/setup/mac)" -- --silentMode`
 
 ## Options ##
 
