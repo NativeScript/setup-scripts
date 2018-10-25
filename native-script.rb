@@ -105,10 +105,18 @@ end
 # Allow brew to lookup versions
 execute("brew tap caskroom/versions", "", false)
 
+# Install Google Chrome
 install("Google Chrome", "Installing Google Chrome (required to debug NativeScript apps)", "brew cask install google-chrome", false, false);
-install("Java SE Development Kit 8", "Installing the Java SE Development Kit 8 ... This might take some time, please, be patient. (You will be prompted for your password)", 'brew cask install java8', false, false)
-install("Android SDK", "Installing Android SDK", 'brew tap caskroom/cask; brew cask install android-sdk', false)
 
+# Install JDK 1.8
+install("Java SE Development Kit 8", "Installing the Java SE Development Kit 8 ... This might take some time, please, be patient. (You will be prompted for your password)", 'brew cask install java8', false, false)
+unless ENV["JAVA_HOME"]
+  puts "Set JAVA_HOME=$(/usr/libexec/java_home -v 1.8)"
+  install_environment_variable("JAVA_HOME", "$(/usr/libexec/java_home -v 1.8)")
+end
+
+# Install Android SDK
+install("Android SDK", "Installing Android SDK", 'brew tap caskroom/cask; brew cask install android-sdk', false)
 unless ENV["ANDROID_HOME"]
   require 'pathname'
   android_home = "/usr/local/share/android-sdk"
@@ -121,12 +129,7 @@ unless ENV["ANDROID_HOME"]
       android_home = Pathname.new(android_home_joined_path).realpath
     end
   end
-
   install_environment_variable("ANDROID_HOME", android_home)
-end
-
-unless ENV["JAVA_HOME"]
-  install_environment_variable("JAVA_HOME", "/Library/Java/Home")
 end
 
 # the -p flag is set in order to ensure zero status code even if the directory exists
