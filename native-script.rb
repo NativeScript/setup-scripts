@@ -105,10 +105,18 @@ end
 # Allow brew to lookup versions
 execute("brew tap caskroom/versions", "", false)
 
+# Install Google Chrome
 install("Google Chrome", "Installing Google Chrome (required to debug NativeScript apps)", "brew cask install google-chrome", false, false);
-install("Java SE Development Kit 8", "Installing the Java SE Development Kit 8 ... This might take some time, please, be patient. (You will be prompted for your password)", 'brew cask install java8', false, false)
-install("Android SDK", "Installing Android SDK", 'brew tap caskroom/cask; brew cask install android-sdk', false)
 
+# Install JDK 1.8
+install("Java SE Development Kit 8", "Installing the Java SE Development Kit 8 ... This might take some time, please, be patient. (You will be prompted for your password)", 'brew cask install java8', false, false)
+unless ENV["JAVA_HOME"]
+  puts "Set JAVA_HOME=$(/usr/libexec/java_home -v 1.8)"
+  install_environment_variable("JAVA_HOME", "$(/usr/libexec/java_home -v 1.8)")
+end
+
+# Install Android SDK
+install("Android SDK", "Installing Android SDK", 'brew tap caskroom/cask; brew cask install android-sdk', false)
 unless ENV["ANDROID_HOME"]
   require 'pathname'
   android_home = "/usr/local/share/android-sdk"
@@ -121,12 +129,7 @@ unless ENV["ANDROID_HOME"]
       android_home = Pathname.new(android_home_joined_path).realpath
     end
   end
-
   install_environment_variable("ANDROID_HOME", android_home)
-end
-
-unless ENV["JAVA_HOME"]
-  install_environment_variable("JAVA_HOME", "/Library/Java/Home")
 end
 
 # the -p flag is set in order to ensure zero status code even if the directory exists
@@ -148,22 +151,27 @@ error_msg = "There seem to be some problems with the Android configuration"
 sdk_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "sdkmanager")
 execute("echo y | #{sdk_manager} \"platform-tools\"", error_msg)
 execute("echo y | #{sdk_manager} \"tools\"", error_msg)
-execute("echo y | #{sdk_manager} \"build-tools;27.0.3\"", error_msg)
-execute("echo y | #{sdk_manager} \"platforms;android-25\"", error_msg)
+execute("echo y | #{sdk_manager} \"build-tools;28.0.3\"", error_msg)
+execute("echo y | #{sdk_manager} \"platforms;android-28\"", error_msg)
 execute("echo y | #{sdk_manager} \"extras;android;m2repository\"", error_msg)
 execute("echo y | #{sdk_manager} \"extras;google;m2repository\"", error_msg)
 
-puts "Do you want to install Android emulator? (y/n)"
+puts "Do you want to install Android emulator system image? (y/n)"
 if $silentMode || gets.chomp.downcase == "y"
   puts "Do you want to install HAXM (Hardware accelerated Android emulator)? (y/n)"
   if $silentMode || gets.chomp.downcase == "y"
-    execute("echo y | #{sdk_manager} \"extras;intel;Hardware_Accelerated_Execution_Manager\"", error_msg)
+    execute("echo y | #{sdk_manager} \"extras;intel;Hardware_Accelerated_Execution_Manager\"", "Failed to download Intel HAXM.")
     haxm_silent_installer = File.join(ENV["ANDROID_HOME"], "extras", "intel", "Hardware_Accelerated_Execution_Manager", "silent_install.sh")
-    execute("sudo #{haxm_silent_installer}", "There seem to be some problems with the Android configuration")
-    execute("echo y | #{sdk_manager} \"system-images;android-25;default;x86\"", error_msg)
-  else
-    execute("echo y | #{sdk_manager} \"system-images;android-25;google_apis;armeabi-v7a\"", error_msg)
+    execute("sudo #{haxm_silent_installer}", "Failed to install Intel HAXM.")
+    execute("echo y | #{sdk_manager} \"system-images;android-28;google_apis;x86\"", "Failed to download Android emulator system image.")
   end  
+end
+
+puts "Do you want to create Android emulator? (y/n)"
+if $silentMode || gets.chomp.downcase == "y"
+  error_msg = "Failed to create Android emulator."
+  avd_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "avdmanager")
+  execute("echo y | #{avdmanager} create avd -n Emulator-Api28-Google -k  \"system-images;android-28;google_apis;x86\" -b google_apis/x86 -c 265M -f", error_msg)
 end
 
 puts "The ANDROID_HOME and JAVA_HOME environment variables have been added to your .bash_profile/.zprofile"
