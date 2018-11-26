@@ -87,16 +87,16 @@ end
 
 def install_environment_variable(name, value)
   ENV[name] = value.to_s
- 
+
   execute("echo \"export #{name}=#{value}\" >> ~/.bash_profile", "Unable to set #{name}")
-  
+
   if File.exist?(File.expand_path("~/.zshrc"))
     execute("echo \"export #{name}=#{value}\" >> ~/.zprofile", "Unable to set #{name}")
   end
 end
 
 # Actually installing all other dependencies
-install("Homebrew",	"Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"</dev/null', false, false)
+install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"</dev/null', false, false)
 
 if !(execute("brew --version", "Homebrew is not installed or not configured properly. Download it from http://brew.sh/, install, set it up and run this script again."))
   exit
@@ -164,14 +164,14 @@ if $silentMode || gets.chomp.downcase == "y"
     haxm_silent_installer = File.join(ENV["ANDROID_HOME"], "extras", "intel", "Hardware_Accelerated_Execution_Manager", "silent_install.sh")
     execute("sudo #{haxm_silent_installer}", "Failed to install Intel HAXM.")
     execute("echo y | #{sdk_manager} \"system-images;android-28;google_apis;x86\"", "Failed to download Android emulator system image.")
-  end  
+  end
 end
 
 puts "Do you want to create Android emulator? (y/n)"
 if $silentMode || gets.chomp.downcase == "y"
   error_msg = "Failed to create Android emulator."
   avd_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "avdmanager")
-  execute("echo y | #{avdmanager} create avd -n Emulator-Api28-Google -k  \"system-images;android-28;google_apis;x86\" -b google_apis/x86 -c 265M -f", error_msg)
+  execute("echo y | #{avd_manager} create avd -n Emulator-Api28-Google -k  \"system-images;android-28;google_apis;x86\" -b google_apis/x86 -c 265M -f", error_msg)
 end
 
 puts "The ANDROID_HOME and JAVA_HOME environment variables have been added to your .bash_profile/.zprofile"
