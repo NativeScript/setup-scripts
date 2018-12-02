@@ -88,10 +88,10 @@ end
 def install_environment_variable(name, value)
   ENV[name] = value.to_s
 
-  execute("echo \"export #{name}=#{value}\" >> ~/.bash_profile", "Unable to set #{name}")
+  `grep "#{name}" ~/.bash_profile || echo 'export #{name}="#{value}"' >> ~/.bash_profile || echo 'Unable to set #{name}'`
 
   if File.exist?(File.expand_path("~/.zshrc"))
-    execute("echo \"export #{name}=#{value}\" >> ~/.zprofile", "Unable to set #{name}")
+    `grep "#{name}" ~/.zprofile || echo 'export #{name}="#{value}"' >> ~/.zprofile || echo 'Unable to set #{name}'`
   end
 end
 
@@ -148,7 +148,7 @@ puts "Configuring your system for Android development... This might take some ti
 # the android tool will introduce a --accept-license option in subsequent releases
 error_msg = "There seem to be some problems with the Android configuration"
 
-sdk_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "sdkmanager")
+sdk_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "sdkmanager").gsub(/ /, "\\ ")
 execute("echo y | #{sdk_manager} \"platform-tools\"", error_msg)
 execute("echo y | #{sdk_manager} \"tools\"", error_msg)
 execute("echo y | #{sdk_manager} \"build-tools;28.0.3\"", error_msg)
@@ -161,7 +161,7 @@ if $silentMode || gets.chomp.downcase == "y"
   puts "Do you want to install HAXM (Hardware accelerated Android emulator)? (y/n)"
   if $silentMode || gets.chomp.downcase == "y"
     execute("echo y | #{sdk_manager} \"extras;intel;Hardware_Accelerated_Execution_Manager\"", "Failed to download Intel HAXM.")
-    haxm_silent_installer = File.join(ENV["ANDROID_HOME"], "extras", "intel", "Hardware_Accelerated_Execution_Manager", "silent_install.sh")
+    haxm_silent_installer = File.join(ENV["ANDROID_HOME"], "extras", "intel", "Hardware_Accelerated_Execution_Manager", "silent_install.sh").gsub(/ /, "\\ ")
     execute("sudo #{haxm_silent_installer}", "Failed to install Intel HAXM.")
     execute("echo y | #{sdk_manager} \"system-images;android-28;google_apis;x86\"", "Failed to download Android emulator system image.")
   end
@@ -170,7 +170,7 @@ end
 puts "Do you want to create Android emulator? (y/n)"
 if $silentMode || gets.chomp.downcase == "y"
   error_msg = "Failed to create Android emulator."
-  avd_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "avdmanager")
+  avd_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "avdmanager").gsub(/ /, "\\ ")
   execute("echo y | #{avd_manager} create avd -n Emulator-Api28-Google -k  \"system-images;android-28;google_apis;x86\" -b google_apis/x86 -c 265M -f", error_msg)
 end
 
