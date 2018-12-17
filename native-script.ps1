@@ -37,7 +37,7 @@ $script:answer = if ($SilentMode) {"a"} else {""}
 function Install($programName, $message, $script, $shouldExit) {
 	if ($script:answer -ne "a") {
 		Write-Host -ForegroundColor Green "Allow the script to install $($programName)?"
-		Write-Host "Tip: Note that if you type a you won't be prompted for subsequent installations"
+		Write-Host "Tip: Note that if you type A you won't be prompted for subsequent installations"
 		do {
 			$script:answer = (Read-Host "(Y)es/(N)o/(A)ll").ToLower()
 		} until ($script:answer -eq "y" -or $script:answer -eq "n" -or $script:answer -eq "a")
@@ -74,8 +74,6 @@ if ((Get-Command "cinst" -ErrorAction SilentlyContinue) -eq $null) {
 
 Install "Google Chrome" "Installing Google Chrome (required to debug NativeScript apps)" "cinst googlechrome --force --yes"
 
-Install "Java Development Kit" "Installing Java Development Kit" "choco upgrade jdk8 --force"
-
 $androidHomePathExists = $False
 if($env:ANDROID_HOME){
 	$androidHomePathExists = Test-Path $env:ANDROID_HOME
@@ -107,12 +105,26 @@ if (!$env:ANDROID_HOME) {
 	refreshenv
 }
 
+# Install OpenJDK after Android SDK, as currently installing the Android SDK also installs the Oracle Java 1.8 version.
+Install "Java Development Kit (OpenJDK)" "Installing Java Development Kit (OpenJDK)" "choco upgrade openjdk --version 11.0 --force --yes"
+
+# For some reason refreshing the environment variables is not working with Chocolatey.
+# To force it, refresh the $PROFILE, as shown here: https://stackoverflow.com/a/46760714/3357767
+$env:ChocolateyInstall = Convert-Path "$((Get-Command choco).path)\..\.."
+Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+refreshenv
+
 if (!$env:JAVA_HOME) {
-	$curVer = (Get-ItemProperty "HKLM:\SOFTWARE\JavaSoft\Java Development Kit").CurrentVersion
-	$javaHome = (Get-ItemProperty "HKLM:\Software\JavaSoft\Java Development Kit\$curVer").JavaHome
-	[Environment]::SetEnvironmentVariable("JAVA_HOME", $javaHome, "User")
-	$env:JAVA_HOME = $javaHome;
-	refreshenv
+	$openJdkLocation = "C:\Program Files\OpenJDK";
+	$openJdkLocationExists = Test-Path $openJdkLocation;
+
+	if ($openJdkLocationExists -eq $True) {
+		# We should never come here, the installation of OpenJDK should set the variable
+		Write-Host -ForegroundColor DarkYellow "Setting up JAVA_HOME to $openJdkLocation";
+		[Environment]::SetEnvironmentVariable("JAVA_HOME", $openJdkLocation, "User");
+		$env:JAVA_HOME = $openJdkLocation;
+		refreshenv;
+	}
 }
 
 Write-Host -ForegroundColor DarkYellow "Setting up Android SDK..."
