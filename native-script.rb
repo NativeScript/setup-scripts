@@ -109,11 +109,13 @@ execute("brew tap caskroom/versions", "", false)
 install("Google Chrome", "Installing Google Chrome (required to debug NativeScript apps)", "brew cask install google-chrome", false, false);
 
 # Install Open JDK 8
+execute("java -version", "", false)
 install("Open JDK 8", "Installing Open JDK 8 ... This might take some time, please, be patient.", 'brew tap AdoptOpenJDK/openjdk; brew cask install adoptopenjdk8', false, false)
 unless ENV["JAVA_HOME"]
   puts "Set JAVA_HOME=$(/usr/libexec/java_home -v 1.8)"
   install_environment_variable("JAVA_HOME", "$(/usr/libexec/java_home -v 1.8)")
 end
+execute("java -version", "", false)
 
 # Install Android SDK
 install("Android SDK", "Installing Android SDK", 'brew cask install android-sdk', false)
@@ -131,17 +133,6 @@ unless ENV["ANDROID_HOME"]
   end
   install_environment_variable("ANDROID_HOME", android_home)
 end
-
-# the -p flag is set in order to ensure zero status code even if the directory exists
-execute("mkdir -p ~/.cocoapods", "There was a problem in creating ~/.cocoapods directory")
-# CocoaPods already has a dependency to xcodeproj and also has a dependency to a lower version of activesupport
-# which works with Ruby 2.0 that comes as the macOS default, so these two installations should be in this order.
-# For more information see: https://github.com/CocoaPods/Xcodeproj/pull/393#issuecomment-231055159
-install("CocoaPods", "Installing CocoaPods... This might take some time, please, be patient.", 'gem install cocoapods -V', true)
-install("CocoaPods", "Setup CocoaPods... This might take some time, please, be patient.", 'pod setup', false)
-install("pip", "Installing pip... This might take some time, please, be patient.", 'easy_install pip', true)
-install("six", "Installing 'six' python package... This might take some time, please, be patient.", 'pip install six', false)
-install("xcodeproj", "Installing xcodeproj... This might take some time, please, be patient.", 'gem install xcodeproj -V', true)
 
 puts "Configuring your system for Android development... This might take some time, please, be patient."
 # Note that multiple license acceptances may be required, hence the multiple commands
@@ -175,5 +166,17 @@ if $silentMode || gets.chomp.downcase == "y"
   execute("echo y | #{avd_manager} create avd -n Emulator-Api28-Google -k  \"system-images;android-28;google_apis;x86\" -b google_apis/x86 -c 265M -f", error_msg)
 end
 
+# the -p flag is set in order to ensure zero status code even if the directory exists
+execute("mkdir -p ~/.cocoapods", "There was a problem in creating ~/.cocoapods directory")
+# CocoaPods already has a dependency to xcodeproj and also has a dependency to a lower version of activesupport
+# which works with Ruby 2.0 that comes as the macOS default, so these two installations should be in this order.
+# For more information see: https://github.com/CocoaPods/Xcodeproj/pull/393#issuecomment-231055159
+install("CocoaPods", "Installing CocoaPods... This might take some time, please, be patient.", 'gem install cocoapods -V', true)
+install("CocoaPods", "Setup CocoaPods... This might take some time, please, be patient.", 'pod setup', false)
+install("pip", "Installing pip... This might take some time, please, be patient.", 'easy_install pip', true)
+install("six", "Installing 'six' python package... This might take some time, please, be patient.", 'pip install six', false)
+install("xcodeproj", "Installing xcodeproj... This might take some time, please, be patient.", 'gem install xcodeproj -V', true)
+
 puts "The ANDROID_HOME and JAVA_HOME environment variables have been added to your .bash_profile/.zprofile"
 puts "Restart the terminal or run `source ~/.bash_profile` to use them."
+
