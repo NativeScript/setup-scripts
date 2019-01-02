@@ -12,5 +12,6 @@ matrix:
       node_js: "10"
 script:
     - sudo ruby native-script.rb -- --silentMode
+    - source ~/.bash_profile
     - npm i -g nativescript --ignore-scripts
     - tns doctor
