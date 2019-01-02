@@ -2,17 +2,7 @@ branches:
   only:
     - master
 matrix:
-  include:
-    - stage: "Build and Test"
-      os: windows
-      language: node_js
-      node_js:
-        - "10"
-      script:
-        - runas /user:administrator /savecred dir
-        - powershell.exe -ExecutionPolicy Bypass -noexit -file "c:\Git\setup-scripts\native-script.ps1" "--silentMode"
-        - npm i -g nativescript
-        - tns doctor
+    include:
     - os: osx
       env:
         - BuildiOS="12.1"
@@ -20,7 +10,9 @@ matrix:
       osx_image: xcode10.1
       language: node_js
       node_js: "10"
-      script:
-        - sudo ruby native-script.rb -- --silentMode
-        - npm i -g nativescript
-        - tns doctor
+install:
+    - npm i -g nativescript
+script:
+    - sudo ruby native-script.rb -- --silentMode
+    - npm i -g nativescript
+    - tns doctor
