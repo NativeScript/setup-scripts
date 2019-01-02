@@ -11,7 +11,7 @@ matrix:
       language: node_js
       node_js: "10"
 install:
-    - npm i -g nativescript
+    - npm i -g nativescript --ignore-scripts
 script:
     - sudo ruby native-script.rb -- --silentMode
     - npm i -g nativescript
