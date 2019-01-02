@@ -108,11 +108,11 @@ execute("brew tap caskroom/versions", "", false)
 # Install Google Chrome
 install("Google Chrome", "Installing Google Chrome (required to debug NativeScript apps)", "brew cask install google-chrome", false, false);
 
-# Install JDK 1.8
-install("Java SE Development Kit 8", "Installing the Java SE Development Kit 8 ... This might take some time, please, be patient. (You will be prompted for your password)", 'brew cask install java8', false, false)
+# Install Open JDK 11
+install("Open JDK 11", "Installing Open JDK 11 ... This might take some time, please, be patient.", 'brew cask install java', false, false)
 unless ENV["JAVA_HOME"]
-  puts "Set JAVA_HOME=$(/usr/libexec/java_home -v 1.8)"
-  install_environment_variable("JAVA_HOME", "$(/usr/libexec/java_home -v 1.8)")
+  puts "Set JAVA_HOME=$(/usr/libexec/java_home -v 11)"
+  install_environment_variable("JAVA_HOME", "$(/usr/libexec/java_home -v 11)")
 end
 
 # Install Android SDK
