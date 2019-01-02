@@ -18,4 +18,5 @@ matrix:
       language: node_js
       node_js: "10"
       script:
-        - echo "Test"
+        - echo "Run Setup Script..."
+        - ruby native-script.rb --silentMode
