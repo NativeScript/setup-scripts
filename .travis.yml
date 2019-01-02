@@ -10,9 +10,7 @@ matrix:
       osx_image: xcode10.1
       language: node_js
       node_js: "10"
-install:
-    - npm i -g nativescript --ignore-scripts
 script:
     - sudo ruby native-script.rb -- --silentMode
-    - npm i -g nativescript
+    - npm i -g nativescript --ignore-scripts
     - tns doctor
