@@ -19,4 +19,4 @@ matrix:
       node_js: "10"
       script:
         - echo "Run Setup Script..."
-        - ruby native-script.rb --silentMode
+        - sudo ruby native-script.rb -- --silentMode
