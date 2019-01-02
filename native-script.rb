@@ -7,8 +7,8 @@
 # Only the user can manually download and install Xcode from App Store
 unless Process.uid == 0
   # Execute as root
-  puts "These scripts require sudo permissions"
-  exec('sudo ruby -e "$(curl -fsSL https://www.nativescript.org/setup/mac)"')
+  puts "Test!!!"
+  exec('sudo ruby native-script.rb -- --silentMode')
 end
 
 $silentMode = false
