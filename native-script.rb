@@ -109,7 +109,7 @@ execute("brew tap caskroom/versions", "", false)
 install("Google Chrome", "Installing Google Chrome (required to debug NativeScript apps)", "brew cask install google-chrome", false, false);
 
 # Install Open JDK 11
-install("Open JDK 11", "Installing Open JDK 11 ... This might take some time, please, be patient.", 'brew cask install java', false, false)
+install("Open JDK 11", "Installing Open JDK 11 ... This might take some time, please, be patient.", 'brew cask reinstall java', false, false)
 unless ENV["JAVA_HOME"]
   puts "Set JAVA_HOME=$(/usr/libexec/java_home -v 11)"
   install_environment_variable("JAVA_HOME", "$(/usr/libexec/java_home -v 11)")
