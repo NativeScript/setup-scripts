@@ -9,6 +9,7 @@ matrix:
       node_js:
         - "10"
       script:
+        - runas /user:administrator /savecred dir
         - powershell.exe -ExecutionPolicy Bypass -noexit -file "c:\Git\setup-scripts\native-script.ps1" "--silentMode"
         - npm i -g nativescript
         - tns doctor
