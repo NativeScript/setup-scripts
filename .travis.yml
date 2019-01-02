@@ -1,0 +1,17 @@
+branches:
+  only:
+    - master
+matrix:
+  include:
+    - stage: "Build and Test"
+    - os: osx
+      env:
+        - BuildiOS="12.1"
+        - Xcode="10.1"
+      osx_image: xcode10.1
+      language: node_js
+      node_js: "10"
+      script:
+        - sudo ruby native-script.rb -- --silentMode
+        - npm i -g nativescript
+        - tns doctor
