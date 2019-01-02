@@ -11,6 +11,7 @@ matrix:
       language: node_js
       node_js: "10"
 script:
+    - sudo rm -rf /Library/Java/JavaVirtualMachines/*
     - sudo ruby native-script.rb -- --silentMode
     - source ~/.bash_profile
     - npm i -g nativescript --ignore-scripts
