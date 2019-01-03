@@ -12,7 +12,7 @@ matrix:
       node_js: "10"
 script:
     - CI=1
-    - ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+    - echo y | ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)" > /dev/null 2>&1
     - sudo rm -rf /Library/Java/JavaVirtualMachines/*
     - sudo ruby native-script.rb -- --silentMode
     - source ~/.bash_profile
