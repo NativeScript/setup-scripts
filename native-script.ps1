@@ -178,22 +178,19 @@ echo y | cmd /c "$androidExecutable" "extras;google;m2repository"
 Write-Host -ForegroundColor DarkYellow "FINISHED setting up Android SDK."
 
 # Setup Default Emulator
-Write-Host -ForegroundColor DarkYellow "Checkpoint 1"
 $androidExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "sdkmanager")
-Write-Host -ForegroundColor DarkYellow "Checkpoint 2"
 $avdManagerExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "avdmanager")
-Write-Host -ForegroundColor DarkYellow "Checkpoint 3"
 
-# Setup Default Emulator
-$installEmulatorAnswer = ''
-Write-Host -ForegroundColor DarkYellow "Checkpoint 4"
-Do {
-	Write-Host -ForegroundColor DarkYellow "Checkpoint 5"
-	$installEmulatorAnswer = (Read-Host "Do you want to install Android emulator? (Y)es/(N)o").ToLower()
-	Write-Host -ForegroundColor DarkYellow "Checkpoint 6"
+$installEmulatorAnswer = if ($SilentMode) {"y"} else {
+	Do {
+		Write-Host -ForegroundColor DarkYellow "Checkpoint 1"
+		$installEmulatorAnswer = (Read-Host "Do you want to install Android emulator? (Y)es/(N)o").ToLower()
+		Write-Host -ForegroundColor DarkYellow "Checkpoint 2"
+	}
+	While ($installEmulatorAnswer -ne 'y' -and $installEmulatorAnswer -ne 'n')
+	Write-Host -ForegroundColor DarkYellow "Checkpoint 3"
 }
-While ($installEmulatorAnswer -ne 'y' -and $installEmulatorAnswer -ne 'n')
-Write-Host -ForegroundColor DarkYellow "Checkpoint 7"
+Write-Host -ForegroundColor DarkYellow "Checkpoint 4"
 
 if ($installEmulatorAnswer -eq 'y') {
 	Write-Host -ForegroundColor DarkYellow "Setting up Android SDK system-images;android-28;google_apis;x86..."
