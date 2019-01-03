@@ -37,7 +37,7 @@ $script:answer = if ($SilentMode) {"a"} else {""}
 function Install($programName, $message, $script, $shouldExit) {
 	if ($script:answer -ne "a") {
 		Write-Host -ForegroundColor Green "Allow the script to install $($programName)?"
-		Write-Host "Tip: Note that if you type a you won't be prompted for subsequent installations"
+		Write-Host "Tip: Note that if you type A you won't be prompted for subsequent installations"
 		do {
 			$script:answer = (Read-Host "(Y)es/(N)o/(A)ll").ToLower()
 		} until ($script:answer -eq "y" -or $script:answer -eq "n" -or $script:answer -eq "a")
@@ -74,8 +74,6 @@ if ((Get-Command "cinst" -ErrorAction SilentlyContinue) -eq $null) {
 
 Install "Google Chrome" "Installing Google Chrome (required to debug NativeScript apps)" "cinst googlechrome --force --yes"
 
-Install "Java Development Kit" "Installing Java Development Kit" "choco upgrade jdk8 --force"
-
 $androidHomePathExists = $False
 if($env:ANDROID_HOME){
 	$androidHomePathExists = Test-Path $env:ANDROID_HOME
@@ -107,12 +105,26 @@ if (!$env:ANDROID_HOME) {
 	refreshenv
 }
 
+# Install OpenJDK after Android SDK, as currently installing the Android SDK also installs the Oracle Java 1.8 version.
+Install "Java Development Kit (OpenJDK)" "Installing Java Development Kit (OpenJDK)" "choco upgrade openjdk --version 11.0 --force --yes"
+
+# For some reason refreshing the environment variables is not working with Chocolatey.
+# To force it, refresh the $PROFILE, as shown here: https://stackoverflow.com/a/46760714/3357767
+$env:ChocolateyInstall = Convert-Path "$((Get-Command choco).path)\..\.."
+Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+refreshenv
+
 if (!$env:JAVA_HOME) {
-	$curVer = (Get-ItemProperty "HKLM:\SOFTWARE\JavaSoft\Java Development Kit").CurrentVersion
-	$javaHome = (Get-ItemProperty "HKLM:\Software\JavaSoft\Java Development Kit\$curVer").JavaHome
-	[Environment]::SetEnvironmentVariable("JAVA_HOME", $javaHome, "User")
-	$env:JAVA_HOME = $javaHome;
-	refreshenv
+	$openJdkLocation = "C:\Program Files\OpenJDK";
+	$openJdkLocationExists = Test-Path $openJdkLocation;
+
+	if ($openJdkLocationExists -eq $True) {
+		# We should never come here, the installation of OpenJDK should set the variable
+		Write-Host -ForegroundColor DarkYellow "Setting up JAVA_HOME to $openJdkLocation";
+		[Environment]::SetEnvironmentVariable("JAVA_HOME", $openJdkLocation, "User");
+		$env:JAVA_HOME = $openJdkLocation;
+		refreshenv;
+	}
 }
 
 Write-Host -ForegroundColor DarkYellow "Setting up Android SDK..."
@@ -167,8 +179,45 @@ echo y | cmd /c "$androidExecutable" "extras;google;m2repository"
 Write-Host -ForegroundColor DarkYellow "FINISHED setting up Android SDK."
 
 # Setup Default Emulator
-iex ((new-object net.webclient).DownloadString($scriptCommonUrl))
-Create-AVD
+$androidExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "sdkmanager")
+$avdManagerExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "avdmanager")
+
+# Setup Default Emulator
+$installEmulatorAnswer = ''
+Do {
+	$installEmulatorAnswer = (Read-Host "Do you want to install Android emulator? (Y)es/(N)o").ToLower()
+}
+While ($installEmulatorAnswer -ne 'y' -and $installEmulatorAnswer -ne 'n')
+
+if ($installEmulatorAnswer -eq 'y') {
+	Write-Host -ForegroundColor DarkYellow "Setting up Android SDK system-images;android-28;google_apis;x86..."
+	echo y | cmd /c "$androidExecutable" "system-images;android-28;google_apis;x86"
+
+	echo y | cmd /c "$androidExecutable" "extras;intel;Hardware_Accelerated_Execution_Manager"
+	$haxmSilentInstaller = [io.path]::combine($env:ANDROID_HOME, "extras", "intel", "Hardware_Accelerated_Execution_Manager", "silent_install.bat")
+	cmd /c "$haxmSilentInstaller"
+
+	if ($LASTEXITCODE -ne 0) {
+		Write-Host -ForegroundColor Yellow "WARNING: Failed to install HAXM in silent mode. Starting interactive mode."
+		$haxmInstaller = [io.path]::combine($env:ANDROID_HOME, "extras", "intel", "Hardware_Accelerated_Execution_Manager", "intelhaxm-android.exe")
+		cmd /c "$haxmInstaller"
+	}
+
+	$cmdArgList = @(
+		"create",
+		"avd",
+		"-n","Emulator-Api28-Default",
+		"-k",'"system-images;android-28;google_apis;x86"'
+	)
+
+	echo no | cmd /c $avdManagerExecutable $cmdArgList
+	
+	if ($LASTEXITCODE -ne 0) {
+		Write-Host -ForegroundColor Red "ERROR: An error occurred while installing Android emulator. Please, install it manually."
+	}else{
+		Write-Host -ForegroundColor Green "Android emulator is successfully installed."
+	}
+}
 
 Write-Host -ForegroundColor Green "This script has modified your environment. You need to log off and log back on for the changes to take effect."
 Pause
