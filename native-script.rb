@@ -109,13 +109,11 @@ execute("brew tap caskroom/versions", "", false)
 install("Google Chrome", "Installing Google Chrome (required to debug NativeScript apps)", "brew cask install google-chrome", false, false);
 
 # Install Open JDK 8
-execute("java -version", "", false)
 install("Open JDK 8", "Installing Open JDK 8 ... This might take some time, please, be patient.", 'brew tap AdoptOpenJDK/openjdk; brew cask install adoptopenjdk8', false, false)
 unless ENV["JAVA_HOME"]
   puts "Set JAVA_HOME=$(/usr/libexec/java_home -v 1.8)"
   install_environment_variable("JAVA_HOME", "$(/usr/libexec/java_home -v 1.8)")
 end
-execute("java -version", "", false)
 
 # Install Android SDK
 install("Android SDK", "Installing Android SDK", 'brew cask install android-sdk', false)
@@ -140,7 +138,6 @@ puts "Configuring your system for Android development... This might take some ti
 error_msg = "There seem to be some problems with the Android configuration"
 
 sdk_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "sdkmanager")
-execute("echo y | #{sdk_manager} \"--licenses\"", error_msg)
 execute("echo y | #{sdk_manager} \"tools\"", error_msg)
 execute("echo y | #{sdk_manager} \"build-tools;28.0.3\"", error_msg)
 execute("echo y | #{sdk_manager} \"platform-tools\"", error_msg)
