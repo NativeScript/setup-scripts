@@ -105,7 +105,7 @@ if (!$env:ANDROID_HOME) {
 }
 
 # Install OpenJDK after Android SDK, as currently installing the Android SDK also installs the Oracle Java 1.8 version.
-Install "Java Development Kit (OpenJDK)" "Installing Java Development Kit (OpenJDK)" "choco upgrade openjdk --version 1.8 --force --yes"
+Install "Java Development Kit (OpenJDK)" "Installing Java Development Kit (OpenJDK)" "choco upgrade adoptopenjdk --version 8.192 --force --yes"
 
 # For some reason refreshing the environment variables is not working with Chocolatey.
 # To force it, refresh the $PROFILE, as shown here: https://stackoverflow.com/a/46760714/3357767
