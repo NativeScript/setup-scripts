@@ -17,4 +17,9 @@ script:
     - sudo ruby native-script.rb -- --silentMode
     - source ~/.bash_profile
     - npm i -g nativescript --ignore-scripts
+    - tns usage-reporting disable
+    - tns error-reporting disable
     - tns doctor
+    - tns create TestApp
+    - tns build android --path TestApp
+    - tns build ios --path TestApp
