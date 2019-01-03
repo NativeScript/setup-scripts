@@ -1,6 +1,9 @@
 branches:
   only:
     - master
+env:
+  global:
+    - TERM=dumb
 matrix:
     include:
     - os: osx
@@ -25,4 +28,4 @@ script:
     - tns doctor
     - tns create TestApp --js
     - tns run ios --path TestApp --justlaunch
-    - tns run android --path TestApp --justlaunch | grep -v . || true
+    - tns run android --path TestApp --justlaunch
