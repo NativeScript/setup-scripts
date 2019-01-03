@@ -110,25 +110,19 @@ install("Google Chrome", "Installing Google Chrome (required to debug NativeScri
 # Install Open JDK 8
 install("Open JDK 8", "Installing Open JDK 8 ... This might take some time, please, be patient.", 'brew tap AdoptOpenJDK/openjdk; brew cask install adoptopenjdk8', false, false)
 unless ENV["JAVA_HOME"]
-  puts "Set JAVA_HOME=$(/usr/libexec/java_home -v 1.8)"
-  install_environment_variable("JAVA_HOME", "$(/usr/libexec/java_home -v 1.8)")
+  java_home = "$(/usr/libexec/java_home -v 1.8)"
+  puts "Set JAVA_HOME=#{java_home}"
+  install_environment_variable("JAVA_HOME", java_home)
 end
 
 # Install Android SDK
 install("Android SDK", "Installing Android SDK", 'brew cask install android-sdk', false)
 unless ENV["ANDROID_HOME"]
-  require 'pathname'
   android_home = "/usr/local/share/android-sdk"
-  unless Pathname.new(android_home).exist?
-    require 'mkmf'
-    # if there's no such symlink then try to find the `android-sdk` directory through the `android` executable
-    android_executable_environment_path = find_executable('android')
-    if android_executable_environment_path
-      android_home_joined_path = File.join(android_executable_environment_path, "..", "..")
-      android_home = Pathname.new(android_home_joined_path).realpath
-    end
-  end
+  puts "Set ANDROID_HOME=#{android_home}"
   install_environment_variable("ANDROID_HOME", android_home)
+  puts "Set ANDROID_SDK_ROOT=#{android_home}"
+  install_environment_variable("ANDROID_SDK_ROOT", android_home)
 end
 
 puts "Configuring your system for Android development... This might take some time, please, be patient."
@@ -159,7 +153,7 @@ puts "Do you want to create Android emulator? (y/n)"
 if $silentMode || gets.chomp.downcase == "y"
   error_msg = "Failed to create Android emulator."
   avd_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "avdmanager")
-  execute("echo y | #{avd_manager} create avd -n Emulator-Api28-Google -k  \"system-images;android-28;google_apis;x86\" -b google_apis/x86 -c 265M -f", error_msg)
+  execute("echo no | #{avd_manager} create avd -n Emulator-Api28-Google -k  \"system-images;android-28;google_apis;x86\" -b google_apis/x86 -c 265M -f", error_msg)
 end
 
 # the -p flag is set in order to ensure zero status code even if the directory exists
@@ -167,11 +161,11 @@ execute("mkdir -p ~/.cocoapods", "There was a problem in creating ~/.cocoapods d
 # CocoaPods already has a dependency to xcodeproj and also has a dependency to a lower version of activesupport
 # which works with Ruby 2.0 that comes as the macOS default, so these two installations should be in this order.
 # For more information see: https://github.com/CocoaPods/Xcodeproj/pull/393#issuecomment-231055159
-install("CocoaPods", "Installing CocoaPods... This might take some time, please, be patient.", 'gem install cocoapods -V', true)
+install("CocoaPods", "Installing CocoaPods... This might take some time, please, be patient.", 'gem install cocoapods', true)
 install("CocoaPods", "Setup CocoaPods... This might take some time, please, be patient.", 'pod setup', false)
 install("pip", "Installing pip... This might take some time, please, be patient.", 'easy_install pip', true)
 install("six", "Installing 'six' python package... This might take some time, please, be patient.", 'pip install six', false)
-install("xcodeproj", "Installing xcodeproj... This might take some time, please, be patient.", 'gem install xcodeproj -V', true)
+install("xcodeproj", "Installing xcodeproj... This might take some time, please, be patient.", 'gem install xcodeproj', true)
 
 puts "The ANDROID_HOME and JAVA_HOME environment variables have been added to your .bash_profile/.zprofile"
 puts "Restart the terminal or run `source ~/.bash_profile` to use them."
