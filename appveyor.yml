@@ -6,15 +6,16 @@ environment:
 install:
   # Get the latest stable version of Node.js or io.js
   - ps: Install-Product node $env:nodejs_version
-  # Install NativeScript
-  - npm i -g nativescript
 
 # Test setup scripts.
 test_script:
   # Output useful info for debugging.
   - node --version
   - npm --version
-  # TODO: Run the script
+  # Run setup script
+  - @powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((new-object net.webclient).DownloadString('https://www.nativescript.org/setup/win'))"
+  # Install NativeScript
+  - npm i -g nativescript --ignore-scripts
 
 # Do not build (by default it tries to build .NET projects)
 build: off
