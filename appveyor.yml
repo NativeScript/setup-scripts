@@ -13,7 +13,7 @@ test_script:
   - node --version
   - npm --version
   # Run setup script
-  - powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((new-object net.webclient).DownloadString('https://www.nativescript.org/setup/win'))"
+  - powershell -NoProfile -ExecutionPolicy Bypass -file "native-script.ps1" "--silentMode"
   # Install NativeScript
   - npm i -g nativescript --ignore-scripts
 
