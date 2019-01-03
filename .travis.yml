@@ -24,5 +24,5 @@ script:
     - tns error-reporting disable
     - tns doctor
     - tns create TestApp --js
-    - tns build android --path TestApp
-    - tns build ios --path TestApp
+    - tns run ios --path TestApp --justlaunch
+    - tns run android --path TestApp --justlaunch
