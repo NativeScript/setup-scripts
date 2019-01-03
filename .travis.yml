@@ -12,10 +12,7 @@ matrix:
       node_js: "10"
       language: ruby
       rvm:
-        - 2.2
-        - jruby
-        - truffleruby
-        - 2.0.0-p247
+        - 2.3.7
 script:
     - sudo rm -rf /usr/local/Caskroom/*
     - sudo rm -rf /usr/local/share/android-sdk
