@@ -1,10 +1,14 @@
-# Test against the latest LTS version of this Node.js version
+# Test only master branch (and PRs).
+branches:
+  only:
+    - master
+
+# Environment configs.
 environment:
   nodejs_version: "10"
 
-# Install scripts. (runs after repo cloning)
+# Install scripts.
 install:
-  # Get the latest stable version of Node.js or io.js
   - ps: Install-Product node $env:nodejs_version
 
 # Test setup scripts.
@@ -16,6 +20,12 @@ test_script:
   - powershell -NoProfile -ExecutionPolicy Bypass -file "native-script.ps1" "--silentMode"
   # Install NativeScript
   - npm i -g nativescript --ignore-scripts
-
+  - tns usage-reporting disable
+  - tns error-reporting disable
+  # Run doctor and build app
+  - tns doctor
+  - tns create TestApp --js
+  - tns build android --path TestApp
+     
 # Do not build (by default it tries to build .NET projects)
 build: off
