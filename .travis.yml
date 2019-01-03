@@ -18,7 +18,6 @@ script:
     - sudo rm -rf /usr/local/share/android-sdk
     - sudo rm -rf /Library/Java/JavaVirtualMachines/*
     - sudo ruby native-script.rb -- --silentMode
-    - set -e
     - source ~/.bash_profile
     - npm i -g nativescript --ignore-scripts
     - tns usage-reporting disable
@@ -27,4 +26,3 @@ script:
     - tns create TestApp
     - tns build android --path TestApp
     - tns build ios --path TestApp
-    - set +e
