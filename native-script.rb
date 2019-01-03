@@ -149,10 +149,10 @@ puts "Do you want to install Android emulator system image? (y/n)"
 if $silentMode || gets.chomp.downcase == "y"
   puts "Do you want to install HAXM (Hardware accelerated Android emulator)? (y/n)"
   if $silentMode || gets.chomp.downcase == "y"
-    execute("echo y | #{sdk_manager} \"extras;intel;Hardware_Accelerated_Execution_Manager\"", "Failed to download Intel HAXM.")
+    execute("echo y | #{sdk_manager} \"extras;intel;Hardware_Accelerated_Execution_Manager\" | grep -v = || true", "Failed to download Intel HAXM.")
     haxm_silent_installer = File.join(ENV["ANDROID_HOME"], "extras", "intel", "Hardware_Accelerated_Execution_Manager", "silent_install.sh")
     execute("sudo #{haxm_silent_installer}", "Failed to install Intel HAXM.")
-    execute("echo y | #{sdk_manager} \"system-images;android-28;google_apis;x86\"", "Failed to download Android emulator system image.")
+    execute("echo y | #{sdk_manager} \"system-images;android-28;google_apis;x86\" | grep -v = || true", "Failed to download Android emulator system image.")
   end
 end
 
