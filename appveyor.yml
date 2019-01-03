@@ -15,3 +15,6 @@ test_script:
   - node --version
   - npm --version
   # TODO: Run the script
+
+# Do not build (by default it tries to build .NET projects)
+build: off
