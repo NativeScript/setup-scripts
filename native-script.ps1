@@ -27,7 +27,7 @@ if ($latestDotNetMajorNumber -lt 4) {
 # Self-elevate
 $isElevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
 if (-not $isElevated) {
-	start-process -FilePath PowerShell.exe -Verb Runas -Wait -ArgumentList ("-NoProfile -ExecutionPolicy Bypass -file ""native-script.ps1"" ""--silentMode""")
+	start-process -FilePath PowerShell.exe -Verb Runas -Wait -ArgumentList ("-NoProfile -ExecutionPolicy Bypass -Command iex ((new-object net.webclient).DownloadString('" + $scriptUrl + "'))")
 	exit 0
 }
 
@@ -222,7 +222,6 @@ if ($installEmulatorAnswer -eq 'y') {
 
 # Refresh Environment Variables
 refreshenv 
-printenv
 
 Write-Host -ForegroundColor Green "This script has modified your environment. You need to log off and log back on for the changes to take effect."
 if (-Not $SilentMode) {
