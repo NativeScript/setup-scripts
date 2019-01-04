@@ -59,7 +59,6 @@ function Pause {
 	[void][System.Console]::ReadKey($true)
 }
 
-# Actually installing all other dependencies
 # Install Chocolatey
 Install "Chocolatey (It's mandatory for the rest of the script)" "Installing Chocolatey" "iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))"
 
@@ -69,8 +68,10 @@ if ((Get-Command "cinst" -ErrorAction SilentlyContinue) -eq $null) {
 	exit 1
 }
 
-# Install dependencies with Chocolatey
+# Refresh Environment Variables
+refreshenv 
 
+# Install dependencies with Chocolatey
 Install "Google Chrome" "Installing Google Chrome (required to debug NativeScript apps)" "cinst googlechrome --force --yes"
 
 $androidHomePathExists = $False
@@ -218,6 +219,9 @@ if ($installEmulatorAnswer -eq 'y') {
 		Write-Host -ForegroundColor Green "Android emulator is successfully installed."
 	}
 }
+
+# Refresh Environment Variables
+refreshenv 
 
 Write-Host -ForegroundColor Green "This script has modified your environment. You need to log off and log back on for the changes to take effect."
 if (-Not $SilentMode) {
