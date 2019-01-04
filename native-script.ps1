@@ -74,37 +74,6 @@ refreshenv
 # Install dependencies with Chocolatey
 Install "Google Chrome" "Installing Google Chrome (required to debug NativeScript apps)" "cinst googlechrome --force --yes"
 
-$androidHomePathExists = $False
-if($env:ANDROID_HOME){
-	$androidHomePathExists = Test-Path $env:ANDROID_HOME
-}
-
-if($androidHomePathExists -eq $False){
-	[Environment]::SetEnvironmentVariable("ANDROID_HOME",$null,"User")
-}
-
-Install "Android SDK" "Installing Android SDK" "cinst android-sdk --force --yes"
-
-refreshenv
-# setup environment
-
-if (!$env:ANDROID_HOME) {
-	Write-Host -ForegroundColor DarkYellow "Setting up ANDROID_HOME"
-	# in case the user has `android` in the PATH, use it as base for setting ANDROID_HOME
-	$androidExecutableEnvironmentPath = Get-Command android -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Definition
-	if ($androidExecutableEnvironmentPath -ne $null) {
-		$androidHomeJoinedPath = [io.path]::combine($androidExecutableEnvironmentPath, "..", "..")
-		$androidHome = Resolve-Path $androidHomeJoinedPath | Select-Object -ExpandProperty Path
-	}
-	else {
-		$androidHome = "${Env:SystemDrive}\Android\android-sdk"
-	}
-
-	$env:ANDROID_HOME = $androidHome;
-	[Environment]::SetEnvironmentVariable("ANDROID_HOME", "$env:ANDROID_HOME", "User")
-	refreshenv
-}
-
 # Install OpenJDK after Android SDK, as currently installing the Android SDK also installs the Oracle Java 1.8 version.
 Install "Java Development Kit (OpenJDK)" "Installing Java Development Kit (OpenJDK)" "choco upgrade adoptopenjdk --version 8.192 --force --yes"
 
@@ -125,6 +94,37 @@ if (!$env:JAVA_HOME) {
 		$env:JAVA_HOME = $openJdkLocation;
 		refreshenv;
 	}
+}
+
+# Check ANDROID_HOME
+$androidHomePathExists = $False
+if($env:ANDROID_HOME){
+	$androidHomePathExists = Test-Path $env:ANDROID_HOME
+}
+
+if($androidHomePathExists -eq $False){
+	[Environment]::SetEnvironmentVariable("ANDROID_HOME",$null,"User")
+}
+
+# Install Android SDK
+Install "Android SDK" "Installing Android SDK" "cinst android-sdk --force --yes"
+
+# Set ANDROID_HOME
+if (!$env:ANDROID_HOME) {
+	Write-Host -ForegroundColor DarkYellow "Setting up ANDROID_HOME"
+	# in case the user has `android` in the PATH, use it as base for setting ANDROID_HOME
+	$androidExecutableEnvironmentPath = Get-Command android -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Definition
+	if ($androidExecutableEnvironmentPath -ne $null) {
+		$androidHomeJoinedPath = [io.path]::combine($androidExecutableEnvironmentPath, "..", "..")
+		$androidHome = Resolve-Path $androidHomeJoinedPath | Select-Object -ExpandProperty Path
+	}
+	else {
+		$androidHome = "${Env:SystemDrive}\Android\android-sdk"
+	}
+
+	$env:ANDROID_HOME = $androidHome;
+	[Environment]::SetEnvironmentVariable("ANDROID_HOME", "$env:ANDROID_HOME", "User")
+	refreshenv
 }
 
 Write-Host -ForegroundColor DarkYellow "Setting up Android SDK..."
@@ -222,6 +222,7 @@ if ($installEmulatorAnswer -eq 'y') {
 
 # Refresh Environment Variables
 refreshenv 
+printenv
 
 Write-Host -ForegroundColor Green "This script has modified your environment. You need to log off and log back on for the changes to take effect."
 if (-Not $SilentMode) {

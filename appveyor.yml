@@ -18,6 +18,7 @@ test_script:
   - npm --version
   # Run setup script
   - powershell -NoProfile -ExecutionPolicy Bypass -file "native-script.ps1" "--silentMode"
+  - refreshenv
   # Install NativeScript
   - npm i -g nativescript --ignore-scripts
   - tns usage-reporting disable
