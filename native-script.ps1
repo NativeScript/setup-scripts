@@ -182,7 +182,7 @@ Write-Host -ForegroundColor DarkYellow "FINISHED setting up Android SDK."
 $androidExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "sdkmanager")
 $avdManagerExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "avdmanager")
 
-# Emulator will be not installed in silent mode since Intel HAXM fails to install in silent mode.
+# Emulator will not be installed in silent mode since Intel HAXM fails to install in silent mode.
 $installEmulatorAnswer = if ($SilentMode) {"n"} else {
 	Do {
 		$installEmulatorAnswer = (Read-Host "Do you want to install Android emulator? (Y)es/(N)o").ToLower()
