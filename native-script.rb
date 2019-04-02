@@ -96,7 +96,12 @@ def install_environment_variable(name, value)
 end
 
 # Actually installing all other dependencies
-install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" > /dev/null 2>&1 </dev/null', false, false)
+if ENV["CI"]
+  # Do not show output when CI detected (Travis CI has some limitations for log size)
+  install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" > /dev/null 2>&1 </dev/null', false, false)
+else
+  install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"</dev/null', false, false)
+end
 if !(execute("brew --version", "Homebrew is not installed or not configured properly. Download it from http://brew.sh/, install, set it up and run this script again."))
   exit
 end
@@ -116,7 +121,7 @@ unless ENV["JAVA_HOME"]
 end
 
 # Install Android SDK
-install("Android SDK", "Installing Android SDK", 'brew cask install android-sdk', false)
+install("Android SDK", "Installing Android SDK", 'brew tap caskroom/cask; brew cask install android-sdk', false)
 unless ENV["ANDROID_HOME"]
   android_home = "/usr/local/share/android-sdk"
   puts "Set ANDROID_HOME=#{android_home}"
@@ -128,15 +133,25 @@ end
 puts "Configuring your system for Android development... This might take some time, please, be patient."
 # Note that multiple license acceptances may be required, hence the multiple commands
 # the android tool will introduce a --accept-license option in subsequent releases
-error_msg = "There seem to be some problems with the Android configuration"
+def install_android_package(name)
+  error_msg = "There seem to be some problems with the Android configuration"
+  sdk_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "sdkmanager")
+  if ENV["CI"]
+    # Hide verbose output because of log size limitations on Travis CI.
+    execute("echo y | #{sdk_manager} \"#{name}\" | grep -v = || true", error_msg)
+  else
+    execute("echo y | #{sdk_manager} \"#{name}\"", error_msg)
+  end
+end
 
 sdk_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "sdkmanager")
-execute("echo y | #{sdk_manager} \"tools\" | grep -v = || true", error_msg)
-execute("echo y | #{sdk_manager} \"build-tools;28.0.3\" | grep -v = || true", error_msg)
-execute("echo y | #{sdk_manager} \"platform-tools\" | grep -v = || true", error_msg)
-execute("echo y | #{sdk_manager} \"platforms;android-28\" | grep -v = || true", error_msg)
-execute("echo y | #{sdk_manager} \"extras;android;m2repository\" | grep -v = || true", error_msg)
-execute("echo y | #{sdk_manager} \"extras;google;m2repository\" | grep -v = || true", error_msg)
+install_android_package("--licenses")
+install_android_package("tools")
+install_android_package("build-tools;28.0.3")
+install_android_package("platform-tools")
+install_android_package("platforms;android-28")
+install_android_package("extras;android;m2repository")
+install_android_package("extras;google;m2repository")
 
 puts "Do you want to install Android emulator system image? (y/n)"
 if $silentMode || gets.chomp.downcase == "y"
@@ -153,6 +168,7 @@ puts "Do you want to create Android emulator? (y/n)"
 if $silentMode || gets.chomp.downcase == "y"
   error_msg = "Failed to create Android emulator."
   avd_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "avdmanager")
+  # Create command ask for custom config, we pass "no" because we want defaults
   execute("echo no | #{avd_manager} create avd -n Emulator-Api28-Google -k  \"system-images;android-28;google_apis;x86\" -b google_apis/x86 -c 265M -f", error_msg)
 end
 
