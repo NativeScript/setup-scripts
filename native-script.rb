@@ -96,7 +96,7 @@ def install_environment_variable(name, value)
 end
 
 # Actually installing all other dependencies
-if ENV["CI"].nil
+if ENV["CI"].nil?
   install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"</dev/null', false, false)
 else
   # Do not show output when CI detected (Travis CI has some limitations for log size)
@@ -137,7 +137,7 @@ puts "Configuring your system for Android development... This might take some ti
 def install_android_package(name)
   error_msg = "There seem to be some problems with the Android configuration"
   sdk_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "sdkmanager")
-  if ENV["CI"].nil
+  if ENV["CI"].nil?
     execute("echo y | #{sdk_manager} \"#{name}\"", error_msg)
   else
     # Hide verbose output because of log size limitations on Travis CI.
