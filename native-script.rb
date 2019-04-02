@@ -96,23 +96,23 @@ def install_environment_variable(name, value)
 end
 
 # Actually installing all other dependencies
-puts test1
+puts "test1"
 if ENV["CI"].nil?
-  puts test21
+  puts "test21"
   install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"</dev/null', false, false)
 else
-  puts test22
+  puts "test22"
   # Do not show output when CI detected (Travis CI has some limitations for log size)
   install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" > /dev/null 2>&1 </dev/null', false, false)
 end
-puts test3
+puts "test3"
 if !(execute("brew --version", "Homebrew is not installed or not configured properly. Download it from http://brew.sh/, install, set it up and run this script again."))
   exit
 end
-puts test4
+puts "test4"
 # Allow brew to lookup versions
 execute("brew tap caskroom/versions", "", false)
-puts test5
+puts "test5"
 # Install Google Chrome
 install("Google Chrome", "Installing Google Chrome (required to debug NativeScript apps)", "brew cask install google-chrome", false, false);
 
