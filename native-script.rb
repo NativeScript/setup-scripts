@@ -96,12 +96,13 @@ def install_environment_variable(name, value)
 end
 
 # Actually installing all other dependencies
-if ENV["CI"]
+if ENV["CI"].nil
+  install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"</dev/null', false, false)
+else
   # Do not show output when CI detected (Travis CI has some limitations for log size)
   install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" > /dev/null 2>&1 </dev/null', false, false)
-else
-  install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"</dev/null', false, false)
 end
+
 if !(execute("brew --version", "Homebrew is not installed or not configured properly. Download it from http://brew.sh/, install, set it up and run this script again."))
   exit
 end
@@ -136,11 +137,11 @@ puts "Configuring your system for Android development... This might take some ti
 def install_android_package(name)
   error_msg = "There seem to be some problems with the Android configuration"
   sdk_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "sdkmanager")
-  if ENV["CI"]
+  if ENV["CI"].nil
+    execute("echo y | #{sdk_manager} \"#{name}\"", error_msg)
+  else
     # Hide verbose output because of log size limitations on Travis CI.
     execute("echo y | #{sdk_manager} \"#{name}\" | grep -v = || true", error_msg)
-  else
-    execute("echo y | #{sdk_manager} \"#{name}\"", error_msg)
   end
 end
 
@@ -184,4 +185,3 @@ install("xcodeproj", "Installing xcodeproj... This might take some time, please,
 
 puts "The ANDROID_HOME and JAVA_HOME environment variables have been added to your .bash_profile/.zprofile"
 puts "Restart the terminal or run `source ~/.bash_profile` to use them."
-
