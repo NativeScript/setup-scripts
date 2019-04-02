@@ -145,7 +145,6 @@ def install_android_package(name)
 end
 
 sdk_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "sdkmanager")
-install_android_package("--licenses")
 install_android_package("tools")
 install_android_package("build-tools;28.0.3")
 install_android_package("platform-tools")
