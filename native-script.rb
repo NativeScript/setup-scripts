@@ -98,10 +98,10 @@ end
 # Actually installing all other dependencies
 puts test1
 if ENV["CI"].nil?
-  puts test2.1
+  puts test21
   install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"</dev/null', false, false)
 else
-  puts test2.2
+  puts test22
   # Do not show output when CI detected (Travis CI has some limitations for log size)
   install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" > /dev/null 2>&1 </dev/null', false, false)
 end
