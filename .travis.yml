@@ -4,6 +4,7 @@ branches:
 env:
   global:
     - TERM=dumb
+    - CI=true
 matrix:
     include:
     - os: osx
