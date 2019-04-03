@@ -4,7 +4,6 @@ branches:
 env:
   global:
     - TERM=dumb
-    - CI=true
 matrix:
     include:
     - os: osx
@@ -18,8 +17,6 @@ matrix:
       rvm:
         - 2.3.7
 script:
-    - export CI=true
-    - echo $CI
     - sudo rm -rf /usr/local/Caskroom/*
     - sudo rm -rf /usr/local/share/android-sdk
     - sudo rm -rf /Library/Java/JavaVirtualMachines/*
