@@ -1,0 +1,32 @@
+branches:
+  only:
+    - master
+env:
+  global:
+    - TERM=dumb
+matrix:
+    include:
+    - os: osx
+      env:
+        - BuildiOS="12.1"
+        - Xcode="10.1"
+      osx_image: xcode10.1
+      language: node_js
+      node_js: "10"
+      language: ruby
+      rvm:
+        - 2.3.7
+script:
+    - sudo rm -rf /usr/local/Caskroom/*
+    - sudo rm -rf /usr/local/share/android-sdk
+    - sudo rm -rf /Library/Java/JavaVirtualMachines/*
+    - sudo ruby native-script.rb -- --silentMode
+    - source ~/.bash_profile
+    - npm i -g nativescript --ignore-scripts
+    - tns usage-reporting disable
+    - tns error-reporting disable
+    - tns doctor
+    - tns create TestApp --js
+    - tns build ios --path TestApp
+    - tns build android --path TestApp
+    - $ANDROID_HOME/tools/bin/avdmanager list avd -c | grep Emu
