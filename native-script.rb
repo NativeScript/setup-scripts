@@ -39,6 +39,14 @@ if !$silentMode
   puts "You need to accept the Xcode license agreement to be able to use the Xcode command-line tools."
   system('xcodebuild -license')
 end
+
+$tasks = ["Homebrew", "Google Chrome", "Open JDK 8", "Android SDK", "Android emulator system image", "HAXM (Hardware accelerated Android emulator)", "Android emulator", "CocoaPods", "CocoaPods setup", "pip", "six", "xcodeproj"]
+$count = 1
+puts "This setup script will request to install the following on your machine:"
+$tasks.each_with_index do |st, index|
+    puts "#{index + 1}. #{st}"
+end
+
 # Help with installing other dependencies
 
 
@@ -62,6 +70,9 @@ def execute(script, warning_message, run_as_root = false)
 end
 
 def install(program_name, message, script, run_as_root = false, show_all_option = true)
+  puts "Step #{$count} of #{$tasks.length}:"
+  $count += 1
+  
   if $answer != "a"
     puts "Allow the script to install " + program_name + "?"
     if show_all_option
@@ -151,8 +162,12 @@ install_android_package("platforms;android-28")
 install_android_package("extras;android;m2repository")
 install_android_package("extras;google;m2repository")
 
+puts "Step #{$count} of #{$tasks.length}:"
+$count += 1
 puts "Do you want to install Android emulator system image? (y/n)"
 if $silentMode || gets.chomp.downcase == "y"
+  puts "Step #{$count} of #{$tasks.length}:"
+  $count += 1
   puts "Do you want to install HAXM (Hardware accelerated Android emulator)? (y/n)"
   if $silentMode || gets.chomp.downcase == "y"
     execute("echo y | #{sdk_manager} \"extras;intel;Hardware_Accelerated_Execution_Manager\" | grep -v = || true", "Failed to download Intel HAXM.")
@@ -162,6 +177,8 @@ if $silentMode || gets.chomp.downcase == "y"
   end
 end
 
+puts "Step #{$count} of #{$tasks.length}:"
+$count += 1
 puts "Do you want to create Android emulator? (y/n)"
 if $silentMode || gets.chomp.downcase == "y"
   error_msg = "Failed to create Android emulator."
