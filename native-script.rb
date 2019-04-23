@@ -124,7 +124,7 @@ execute("brew tap caskroom/versions", "", false)
 install("Google Chrome", "Installing Google Chrome (required to debug NativeScript apps)", "brew cask install google-chrome", false, false);
 
 # Install Open JDK 8
-install("Open JDK 8", "Installing Open JDK 8 ... This might take some time, please, be patient.", 'brew tap AdoptOpenJDK/openjdk; brew cask install adoptopenjdk8', false, false)
+install("Open JDK 8", "Installing Open JDK 8 ... This might take some time, please, be patient.", 'brew cask install adoptopenjdk8', false, false)
 unless ENV["JAVA_HOME"]
   java_home = "$(/usr/libexec/java_home -v 1.8)"
   puts "Set JAVA_HOME=#{java_home}"
