@@ -118,7 +118,7 @@ if !(execute("brew --version", "Homebrew is not installed or not configured prop
 end
 
 # Allow brew to lookup versions
-execute("brew tap caskroom/versions", "", false)
+execute("brew tap homebrew/homebrew-cask-versions", "", false)
 
 # Install Google Chrome
 install("Google Chrome", "Installing Google Chrome (required to debug NativeScript apps)", "brew cask install google-chrome", false, false);
