@@ -69,10 +69,10 @@ if ((Get-Command "cinst" -ErrorAction SilentlyContinue) -eq $null) {
 }
 
 # Refresh Environment Variables
-refreshenv 
+refreshenv
 
 # Install dependencies with Chocolatey
-Install "Google Chrome" "Installing Google Chrome (required to debug NativeScript apps)" "cinst googlechrome --force --yes"
+# Install "Google Chrome" "Installing Google Chrome (required to debug NativeScript apps)" "cinst googlechrome --force --yes"
 
 # Install OpenJDK after Android SDK, as currently installing the Android SDK also installs the Oracle Java 1.8 version.
 Install "Java Development Kit (OpenJDK)" "Installing Java Development Kit (OpenJDK)" "choco upgrade adoptopenjdk --version 8.192 --force --yes"
@@ -168,10 +168,10 @@ $androidExecutable = [io.path]::combine($env:ANDROID_HOME, "tools", "bin", "sdkm
 
 Write-Host -ForegroundColor DarkYellow "Setting up Android SDK platform-tools..."
 echo y | cmd /c "$androidExecutable" "platform-tools"
-Write-Host -ForegroundColor DarkYellow "Setting up Android SDK build-tools;28.0.3..."
-echo y | cmd /c "$androidExecutable" "build-tools;28.0.3"
-Write-Host -ForegroundColor DarkYellow "Setting up Android SDK platforms;android-28..."
-echo y | cmd /c "$androidExecutable" "platforms;android-28"
+Write-Host -ForegroundColor DarkYellow "Setting up Android SDK build-tools;30.0.3..."
+echo y | cmd /c "$androidExecutable" "build-tools;30.0.3"
+Write-Host -ForegroundColor DarkYellow "Setting up Android SDK platforms;android-30..."
+echo y | cmd /c "$androidExecutable" "platforms;android-30"
 Write-Host -ForegroundColor DarkYellow "Setting up Android SDK extras;android;m2repository..."
 echo y | cmd /c "$androidExecutable" "extras;android;m2repository"
 Write-Host -ForegroundColor DarkYellow "Setting up Android SDK extras;google;m2repository..."
@@ -191,8 +191,8 @@ $installEmulatorAnswer = if ($SilentMode) {"n"} else {
 }
 
 if ($installEmulatorAnswer -eq 'y') {
-	Write-Host -ForegroundColor DarkYellow "Setting up Android SDK system-images;android-28;google_apis;x86..."
-	echo y | cmd /c "$androidExecutable" "system-images;android-28;google_apis;x86"
+	Write-Host -ForegroundColor DarkYellow "Setting up Android SDK system-images;android-30;google_apis;x86..."
+	echo y | cmd /c "$androidExecutable" "system-images;android-30;google_apis;x86"
 
 	echo y | cmd /c "$androidExecutable" "extras;intel;Hardware_Accelerated_Execution_Manager"
 	$haxmSilentInstaller = [io.path]::combine($env:ANDROID_HOME, "extras", "intel", "Hardware_Accelerated_Execution_Manager", "silent_install.bat")
@@ -207,12 +207,12 @@ if ($installEmulatorAnswer -eq 'y') {
 	$cmdArgList = @(
 		"create",
 		"avd",
-		"-n","Emulator-Api28-Default",
-		"-k",'"system-images;android-28;google_apis;x86"'
+		"-n","Emulator-Api30-Default",
+		"-k",'"system-images;android-30;google_apis;x86"'
 	)
 
 	echo no | cmd /c $avdManagerExecutable $cmdArgList
-	
+
 	if ($LASTEXITCODE -ne 0) {
 		Write-Host -ForegroundColor Red "ERROR: An error occurred while installing Android emulator. Please, install it manually."
 	}else{
@@ -221,7 +221,7 @@ if ($installEmulatorAnswer -eq 'y') {
 }
 
 # Refresh Environment Variables
-refreshenv 
+refreshenv
 
 Write-Host -ForegroundColor Green "This script has modified your environment. You need to log off and log back on for the changes to take effect."
 if (-Not $SilentMode) {
