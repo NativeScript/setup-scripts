@@ -13,7 +13,7 @@ end
 
 $silentMode = false
 $answer = ""
-ARGV.each do|a|
+ARGV.each do |a|
   if a == "--silentMode"
     $silentMode = true
     $answer = "a"
@@ -40,11 +40,11 @@ if !$silentMode
   system('xcodebuild -license')
 end
 
-$tasks = ["Homebrew", "Google Chrome", "Open JDK 8", "Android SDK", "Android emulator system image", "HAXM (Hardware accelerated Android emulator)", "Android emulator", "CocoaPods", "CocoaPods setup", "pip", "six", "xcodeproj"]
+$tasks = ["Homebrew", "Open JDK 8", "Android SDK", "Android emulator system image", "HAXM (Hardware accelerated Android emulator)", "Android emulator", "CocoaPods", "CocoaPods setup", "pip", "six", "xcodeproj"]
 $count = 1
 puts "This setup script will request to install the following on your machine:"
 $tasks.each_with_index do |st, index|
-    puts "#{index + 1}. #{st}"
+  puts "#{index + 1}. #{st}"
 end
 
 # Help with installing other dependencies
@@ -72,7 +72,7 @@ end
 def install(program_name, message, script, run_as_root = false, show_all_option = true)
   puts "Step #{$count} of #{$tasks.length}:"
   $count += 1
-  
+
   if $answer != "a"
     puts "Allow the script to install " + program_name + "?"
     if show_all_option
@@ -107,10 +107,12 @@ def install_environment_variable(name, value)
 end
 
 # Actually installing all other dependencies
-if $silentMode
-  install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" > /dev/null 2>&1 </dev/null', false, false)
-else
-  install("Homebrew", "Installing Homebrew...", 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"</dev/null', false, false)
+if !(execute("which brew > /dev/null", "Homebrew is not installed or not configured properly, trying to install now."))
+  if $silentMode
+    install("Homebrew", "Installing Homebrew...", '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" > /dev/null 2>&1 </dev/null', false, false)
+  else
+    install("Homebrew", "Installing Homebrew...", '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" </dev/null', false, false)
+  end
 end
 
 if !(execute("brew --version", "Homebrew is not installed or not configured properly. Download it from http://brew.sh/, install, set it up and run this script again."))
@@ -118,13 +120,14 @@ if !(execute("brew --version", "Homebrew is not installed or not configured prop
 end
 
 # Allow brew to lookup versions
-execute("brew tap caskroom/versions", "", false)
+execute("brew tap homebrew/cask-versions", "", false)
+execute("brew tap homebrew/cask", "", false)
 
 # Install Google Chrome
-install("Google Chrome", "Installing Google Chrome (required to debug NativeScript apps)", "brew cask install google-chrome", false, false);
+# install("Google Chrome", "Installing Google Chrome (required to debug NativeScript apps)", "brew install --cask google-chrome", false, false);
 
 # Install Open JDK 8
-install("Open JDK 8", "Installing Open JDK 8 ... This might take some time, please, be patient.", 'brew cask install adoptopenjdk8', false, false)
+install("Open JDK 8", "Installing Open JDK 8 ... This might take some time, please, be patient.", 'brew install --cask adoptopenjdk8', false, false)
 unless ENV["JAVA_HOME"]
   java_home = "$(/usr/libexec/java_home -v 1.8)"
   puts "Set JAVA_HOME=#{java_home}"
@@ -132,8 +135,9 @@ unless ENV["JAVA_HOME"]
 end
 
 # Install Android SDK
-install("Android SDK", "Installing Android SDK", 'brew tap caskroom/cask; brew cask install android-sdk', false)
-unless ENV["ANDROID_HOME"]
+install("Android SDK", "Installing Android SDK", 'brew install --cask android-sdk', false)
+puts ENV['ANDROID_HOME']
+unless ENV['ANDROID_HOME']
   android_home = "/usr/local/share/android-sdk"
   puts "Set ANDROID_HOME=#{android_home}"
   install_environment_variable("ANDROID_HOME", android_home)
@@ -154,13 +158,33 @@ def install_android_package(name)
   end
 end
 
+def install_android_packages()
+  if $answer != "a"
+    puts "Allow the script to install Android packages?"
+
+    loop do
+      puts "(Y)es/(N)o"
+      $answer = gets.chomp.downcase
+      is_answer_yn = $answer == "y" || $answer == "n"
+      break if is_answer_yn
+    end
+
+    if $answer == "n"
+      puts "You have chosen not to install Android packages. Some features of NativeScript may not work correctly if you haven't already installed it"
+      return
+    end
+  end
+
+  install_android_package("tools")
+  install_android_package("build-tools;30.0.3")
+  install_android_package("platform-tools")
+  install_android_package("platforms;android-30")
+  install_android_package("extras;android;m2repository")
+  install_android_package("extras;google;m2repository")
+end
+
 sdk_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "sdkmanager")
-install_android_package("tools")
-install_android_package("build-tools;28.0.3")
-install_android_package("platform-tools")
-install_android_package("platforms;android-28")
-install_android_package("extras;android;m2repository")
-install_android_package("extras;google;m2repository")
+install_android_packages()
 
 puts "Step #{$count} of #{$tasks.length}:"
 $count += 1
@@ -173,7 +197,7 @@ if $silentMode || gets.chomp.downcase == "y"
     execute("echo y | #{sdk_manager} \"extras;intel;Hardware_Accelerated_Execution_Manager\" | grep -v = || true", "Failed to download Intel HAXM.")
     haxm_silent_installer = File.join(ENV["ANDROID_HOME"], "extras", "intel", "Hardware_Accelerated_Execution_Manager", "silent_install.sh")
     execute("sudo #{haxm_silent_installer}", "Failed to install Intel HAXM.")
-    execute("echo y | #{sdk_manager} \"system-images;android-28;google_apis;x86\" | grep -v = || true", "Failed to download Android emulator system image.")
+    execute("echo y | #{sdk_manager} \"system-images;android-30;google_apis;x86\" | grep -v = || true", "Failed to download Android emulator system image.")
   end
 end
 
@@ -184,7 +208,7 @@ if $silentMode || gets.chomp.downcase == "y"
   error_msg = "Failed to create Android emulator."
   avd_manager = File.join(ENV["ANDROID_HOME"], "tools", "bin", "avdmanager")
   # Create command ask for custom config, we pass "no" because we want defaults
-  execute("echo no | #{avd_manager} create avd -n Emulator-Api28-Google -k  \"system-images;android-28;google_apis;x86\" -b google_apis/x86 -c 265M -f", error_msg)
+  execute("echo no | #{avd_manager} create avd -n Emulator-Api30-Google -k  \"system-images;android-30;google_apis;x86\" -b google_apis/x86 -c 265M -f", error_msg)
 end
 
 # the -p flag is set in order to ensure zero status code even if the directory exists
